@@ -27,6 +27,8 @@
 | **Target Users** | Employees + Managers (Minsait/Indra) |
 | **Tenant** | `indra365.sharepoint.com` |
 | **Admin Account** | `mbenicios@minsait.com` |
+| **Power Platform Env** | `ColOfertasBrasilPro` |
+| **Dataverse URL** | `https://colofertasbrasilpro.crm4.dynamics.com/` |
 
 ---
 
