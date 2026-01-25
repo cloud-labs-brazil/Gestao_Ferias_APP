@@ -1,0 +1,230 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "emphasis",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "auto",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "https://img.icons8.com/fluency/48/combo-chart.png",
+                                    "size": "Medium"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "stretch",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "📊 Dashboard - Gestão Férias",
+                                    "weight": "Bolder",
+                                    "size": "Large",
+                                    "color": "Accent"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Equipe: ${managerName}",
+                                    "spacing": "None",
+                                    "isSubtle": true
+                                }
+                            ],
+                            "verticalContentAlignment": "Center"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "1",
+                            "style": "warning",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${pendingCount}",
+                                    "size": "ExtraLarge",
+                                    "weight": "Bolder",
+                                    "horizontalAlignment": "Center"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Pendentes",
+                                    "horizontalAlignment": "Center",
+                                    "size": "Small"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "1",
+                            "style": "good",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${approvedCount}",
+                                    "size": "ExtraLarge",
+                                    "weight": "Bolder",
+                                    "horizontalAlignment": "Center"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Aprovadas",
+                                    "horizontalAlignment": "Center",
+                                    "size": "Small"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "1",
+                            "style": "attention",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${onVacationCount}",
+                                    "size": "ExtraLarge",
+                                    "weight": "Bolder",
+                                    "horizontalAlignment": "Center"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Em Férias",
+                                    "horizontalAlignment": "Center",
+                                    "size": "Small"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "⏳ Solicitações Pendentes de Aprovação",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "Container",
+                    "$data": "${pendingRequests}",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "stretch",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${employeeName}",
+                                            "weight": "Bolder"
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${startDate} - ${endDate} (${totalDays} dias)",
+                                            "isSubtle": true,
+                                            "spacing": "None",
+                                            "size": "Small"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "ActionSet",
+                                            "actions": [
+                                                {
+                                                    "type": "Action.Submit",
+                                                    "title": "✅",
+                                                    "data": {
+                                                        "action": "approve",
+                                                        "requestId": "${requestId}"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "Action.Submit",
+                                                    "title": "❌",
+                                                    "data": {
+                                                        "action": "reject",
+                                                        "requestId": "${requestId}"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "separator": true
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium",
+            "$when": "${int(pendingCount) > 0}"
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "🏖️ Colaboradores em Férias Agora",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "Container",
+                    "$data": "${onVacation}",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "• ${employeeName} - até ${endDate}",
+                            "size": "Small"
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium",
+            "$when": "${int(onVacationCount) > 0}"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "🔄 Atualizar",
+            "data": {
+                "action": "refreshDashboard"
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "📅 Ver Calendário",
+            "data": {
+                "action": "viewCalendar"
+            }
+        }
+    ]
+}

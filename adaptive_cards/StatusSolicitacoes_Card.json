@@ -1,0 +1,144 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "emphasis",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "📋 Minhas Solicitações",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Accent"
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Solicitações Pendentes",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "Container",
+                    "$data": "${pendingRequests}",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "⏳",
+                                            "size": "Large"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Column",
+                                    "width": "stretch",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${startDate} - ${endDate}",
+                                            "weight": "Bolder"
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${totalDays} dias | Aguardando: ${approverName}",
+                                            "isSubtle": true,
+                                            "spacing": "None",
+                                            "size": "Small"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "separator": true
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Solicitações Aprovadas",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "Container",
+                    "$data": "${approvedRequests}",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "✅",
+                                            "size": "Large"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Column",
+                                    "width": "stretch",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${startDate} - ${endDate}",
+                                            "weight": "Bolder"
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${totalDays} dias | Aprovado em: ${approvalDate}",
+                                            "isSubtle": true,
+                                            "spacing": "None",
+                                            "size": "Small"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "separator": true
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium",
+            "$when": "${count(approvedRequests) > 0}"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "📝 Nova Solicitação",
+            "data": {
+                "action": "createRequest"
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "❌ Cancelar Solicitação",
+            "data": {
+                "action": "cancelRequest"
+            },
+            "style": "destructive"
+        }
+    ]
+}

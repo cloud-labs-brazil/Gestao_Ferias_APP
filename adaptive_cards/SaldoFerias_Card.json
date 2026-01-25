@@ -1,0 +1,103 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "emphasis",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "auto",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "https://img.icons8.com/fluency/48/beach.png",
+                                    "size": "Medium"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "stretch",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Saldo de Férias",
+                                    "weight": "Bolder",
+                                    "size": "Large",
+                                    "color": "Accent"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${employeeName}",
+                                    "spacing": "None",
+                                    "isSubtle": true
+                                }
+                            ],
+                            "verticalContentAlignment": "Center"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "FactSet",
+                    "facts": [
+                        {
+                            "title": "📊 Dias Disponíveis",
+                            "value": "${availableDays} dias"
+                        },
+                        {
+                            "title": "📅 Período Aquisitivo",
+                            "value": "${acquisitionPeriod}"
+                        },
+                        {
+                            "title": "⏰ Vencimento",
+                            "value": "${expirationDate}"
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "Container",
+            "style": "warning",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "⚠️ Lembre-se: antecedência mínima de 45 dias",
+                    "wrap": true,
+                    "isSubtle": true,
+                    "size": "Small"
+                }
+            ],
+            "spacing": "Medium",
+            "$when": "${int(availableDays) > 0}"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "📝 Criar Solicitação",
+            "data": {
+                "action": "createRequest"
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "📋 Ver Histórico",
+            "data": {
+                "action": "viewHistory"
+            }
+        }
+    ]
+}

@@ -1,0 +1,105 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "emphasis",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "auto",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "https://img.icons8.com/fluency/48/checked.png",
+                                    "size": "Medium"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "stretch",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Solicitação Criada!",
+                                    "weight": "Bolder",
+                                    "size": "Large",
+                                    "color": "Good"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "ID: ${requestId}",
+                                    "spacing": "None",
+                                    "isSubtle": true
+                                }
+                            ],
+                            "verticalContentAlignment": "Center"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "FactSet",
+                    "facts": [
+                        {
+                            "title": "📅 Período",
+                            "value": "${startDate} - ${endDate}"
+                        },
+                        {
+                            "title": "📊 Total de Dias",
+                            "value": "${totalDays} dias"
+                        },
+                        {
+                            "title": "👤 Aprovador",
+                            "value": "${approverName}"
+                        },
+                        {
+                            "title": "📌 Status",
+                            "value": "⏳ Pendente de Aprovação"
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "Container",
+            "style": "${if(hasConflict, 'warning', 'good')}",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "${if(hasConflict, '⚠️ Conflito detectado: ' + conflictingEmployees, '✅ Sem conflitos com a equipe')}",
+                    "wrap": true,
+                    "size": "Small"
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "TextBlock",
+            "text": "Sua solicitação foi enviada para aprovação. Você receberá uma notificação quando for processada.",
+            "wrap": true,
+            "spacing": "Medium",
+            "isSubtle": true
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "📋 Ver Minhas Solicitações",
+            "data": {
+                "action": "viewRequests"
+            }
+        }
+    ]
+}

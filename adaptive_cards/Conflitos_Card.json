@@ -1,0 +1,145 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "${if(hasConflict, 'warning', 'good')}",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "auto",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "${if(hasConflict, 'https://img.icons8.com/fluency/48/warning-shield.png', 'https://img.icons8.com/fluency/48/ok.png')}",
+                                    "size": "Medium"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "stretch",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${if(hasConflict, '⚠️ Conflitos Detectados', '✅ Sem Conflitos')}",
+                                    "weight": "Bolder",
+                                    "size": "Large",
+                                    "color": "${if(hasConflict, 'Warning', 'Good')}"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Período: ${startDate} - ${endDate}",
+                                    "spacing": "None",
+                                    "isSubtle": true
+                                }
+                            ],
+                            "verticalContentAlignment": "Center"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Cobertura da Equipe: ${teamCoveragePercentage}%",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "ProgressBar",
+                    "value": "${teamCoveragePercentage}",
+                    "color": "${if(int(teamCoveragePercentage) >= 70, 'good', if(int(teamCoveragePercentage) >= 50, 'warning', 'attention'))}"
+                }
+            ],
+            "spacing": "Medium"
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Colaboradores com férias no período:",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                },
+                {
+                    "type": "Container",
+                    "$data": "${conflictingEmployees}",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "🏖️"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Column",
+                                    "width": "stretch",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${name}",
+                                            "weight": "Bolder"
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${period}",
+                                            "isSubtle": true,
+                                            "spacing": "None",
+                                            "size": "Small"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "separator": true
+                        }
+                    ]
+                }
+            ],
+            "spacing": "Medium",
+            "$when": "${hasConflict}"
+        },
+        {
+            "type": "TextBlock",
+            "text": "Você pode prosseguir com a solicitação mesmo havendo conflitos. O gestor será informado.",
+            "wrap": true,
+            "spacing": "Medium",
+            "isSubtle": true,
+            "$when": "${hasConflict}"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "📝 Prosseguir com Solicitação",
+            "data": {
+                "action": "proceedWithRequest",
+                "acknowledgeConflict": true
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "🔄 Verificar Outro Período",
+            "data": {
+                "action": "checkAnotherPeriod"
+            },
+            "style": "default"
+        }
+    ]
+}

@@ -1,0 +1,277 @@
+kind: AdaptiveTrigger
+schema: 1.0.0
+triggers:
+  - kind: OnConversationStart
+    actions:
+      - kind: SendActivity
+        activity: 
+          text: |
+            Olá! 👋 Sou o **Agente Gestão Férias**.
+            
+            Posso ajudá-lo com:
+            - 📊 Consultar saldo de férias
+            - 📝 Criar solicitação de férias
+            - 🔍 Verificar status de solicitações
+            - ⚠️ Verificar conflitos de equipe
+            - ❌ Cancelar solicitações
+            
+            Como posso ajudá-lo hoje?
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: ConsultarSaldo
+displayName: Consultar Saldo de Férias
+trigger:
+  phrases:
+    - qual meu saldo de férias
+    - quantos dias de férias eu tenho
+    - consultar saldo
+    - verificar dias disponíveis
+    - saldo férias
+actions:
+  - kind: SendActivity
+    activity:
+      text: "Verificando seu saldo de férias..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_CONSULTAR_SALDO}}"
+    inputs:
+      email: "={{System.User.Email}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: CriarSolicitacao
+displayName: Criar Solicitação de Férias
+trigger:
+  phrases:
+    - quero solicitar férias
+    - criar solicitação de férias
+    - agendar férias
+    - marcar férias
+    - programar férias
+actions:
+  - kind: Question
+    id: dataInicio
+    prompt: "📅 Qual a **data de início** das suas férias? (formato: DD/MM/AAAA)"
+    variable: dataInicio
+    entity: DateTimeEntity
+  - kind: Question
+    id: dataFim
+    prompt: "📅 Qual a **data final** das suas férias? (formato: DD/MM/AAAA)"
+    variable: dataFim
+    entity: DateTimeEntity
+  - kind: SendActivity
+    activity:
+      text: "Verificando conflitos e criando sua solicitação..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_CRIAR_SOLICITACAO}}"
+    inputs:
+      email: "={{System.User.Email}}"
+      dataInicio: "={{Topic.dataInicio}}"
+      dataFim: "={{Topic.dataFim}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: ConsultarStatus
+displayName: Consultar Status de Solicitação
+trigger:
+  phrases:
+    - qual o status da minha solicitação
+    - minhas solicitações
+    - verificar solicitação
+    - situação das férias
+    - solicitações pendentes
+actions:
+  - kind: SendActivity
+    activity:
+      text: "Consultando suas solicitações..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_CONSULTAR_STATUS}}"
+    inputs:
+      email: "={{System.User.Email}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: VerificarConflitos
+displayName: Verificar Conflitos de Equipe
+trigger:
+  phrases:
+    - verificar conflitos
+    - quem vai estar de férias
+    - conflitos de equipe
+    - calendario da equipe
+    - férias da equipe
+actions:
+  - kind: Question
+    id: dataCheck
+    prompt: "📅 Qual período você deseja verificar? Informe a **data de início** (DD/MM/AAAA)"
+    variable: dataCheck
+    entity: DateTimeEntity
+  - kind: Question
+    id: dataCheckFim
+    prompt: "📅 E a **data final** do período? (DD/MM/AAAA)"
+    variable: dataCheckFim
+    entity: DateTimeEntity
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_VERIFICAR_CONFLITOS}}"
+    inputs:
+      email: "={{System.User.Email}}"
+      dataInicio: "={{Topic.dataCheck}}"
+      dataFim: "={{Topic.dataCheckFim}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: CancelarSolicitacao
+displayName: Cancelar Solicitação
+trigger:
+  phrases:
+    - cancelar solicitação
+    - cancelar férias
+    - desistir das férias
+    - anular solicitação
+actions:
+  - kind: SendActivity
+    activity:
+      text: "Buscando suas solicitações ativas..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_CANCELAR_SOLICITACAO}}"
+    inputs:
+      email: "={{System.User.Email}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: AprovarSolicitacao
+displayName: Aprovar Solicitação (Gestor)
+trigger:
+  phrases:
+    - aprovar férias
+    - aprovar solicitação
+    - autorizar férias
+    - aceitar solicitação
+actions:
+  - kind: SendActivity
+    activity:
+      text: "Buscando solicitações pendentes da sua equipe..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_APROVAR_SOLICITACAO}}"
+    inputs:
+      email: "={{System.User.Email}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: RejeitarSolicitacao
+displayName: Rejeitar Solicitação (Gestor)
+trigger:
+  phrases:
+    - rejeitar férias
+    - rejeitar solicitação
+    - recusar férias
+    - negar solicitação
+actions:
+  - kind: Question
+    id: motivoRejeicao
+    prompt: "📝 Por favor, informe o **motivo** da rejeição:"
+    variable: motivoRejeicao
+    entity: StringEntity
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_REJEITAR_SOLICITACAO}}"
+    inputs:
+      email: "={{System.User.Email}}"
+      motivo: "={{Topic.motivoRejeicao}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: DashboardGestor
+displayName: Dashboard do Gestor
+trigger:
+  phrases:
+    - dashboard
+    - visão geral da equipe
+    - relatório de férias
+    - resumo férias equipe
+actions:
+  - kind: SendActivity
+    activity:
+      text: "Gerando dashboard da sua equipe..."
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_DASHBOARD_GESTOR}}"
+    inputs:
+      email: "={{System.User.Email}}"
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: AlertasCriticos
+displayName: Alertas Críticos
+trigger:
+  phrases:
+    - alertas
+    - notificações
+    - avisos importantes
+    - alertas críticos
+actions:
+  - kind: InvokeFlowAction
+    flowId: "{{FLOW_ALERTAS_CRITICOS}}"
+    inputs: {}
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: Ajuda
+displayName: Ajuda e Informações
+trigger:
+  phrases:
+    - ajuda
+    - help
+    - como funciona
+    - instruções
+    - regras de férias
+actions:
+  - kind: SendActivity
+    activity:
+      text: |
+        📚 **Regras de Férias:**
+        
+        ✅ Antecedência mínima: **45 dias**
+        ✅ Mínimo por solicitação: **5 dias**
+        ✅ Máximo por solicitação: **30 dias**
+        ✅ Verificação de conflitos: **Obrigatória**
+        
+        **Comandos disponíveis:**
+        - "Consultar saldo" - Ver dias disponíveis
+        - "Criar solicitação" - Nova solicitação
+        - "Verificar status" - Acompanhar solicitações
+        - "Verificar conflitos" - Checar equipe
+        - "Cancelar solicitação" - Anular pedido
+        
+        **Para gestores:**
+        - "Aprovar" ou "Rejeitar" solicitações
+        - "Dashboard" - Visão geral da equipe
+
+---
+kind: TopicDefinition
+schema: 1.0.0
+name: Fallback
+displayName: Resposta Padrão
+trigger:
+  kind: Unknown
+actions:
+  - kind: SendActivity
+    activity:
+      text: |
+        Desculpe, não entendi seu pedido. 😅
+        
+        Posso ajudar com:
+        - Consultar saldo de férias
+        - Criar solicitação
+        - Verificar status
+        - Verificar conflitos
+        
+        Digite "ajuda" para mais informações.

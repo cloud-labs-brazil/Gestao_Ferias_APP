@@ -1,0 +1,121 @@
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "body": [
+        {
+            "type": "Container",
+            "style": "attention",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "width": "auto",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "https://img.icons8.com/fluency/48/high-priority.png",
+                                    "size": "Medium"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "width": "stretch",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "⚠️ Alertas Críticos",
+                                    "weight": "Bolder",
+                                    "size": "Large",
+                                    "color": "Attention"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "${alertCount} alertas pendentes",
+                                    "spacing": "None",
+                                    "isSubtle": true
+                                }
+                            ],
+                            "verticalContentAlignment": "Center"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "$data": "${alerts}",
+            "items": [
+                {
+                    "type": "Container",
+                    "style": "${if(type == 'CRITICAL', 'attention', if(type == 'WARNING', 'warning', 'default'))}",
+                    "items": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": "auto",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${if(type == 'CRITICAL', '🔴', if(type == 'WARNING', '🟡', '🔵'))}",
+                                            "size": "Large"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Column",
+                                    "width": "stretch",
+                                    "items": [
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${title}",
+                                            "weight": "Bolder",
+                                            "wrap": true
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "${description}",
+                                            "wrap": true,
+                                            "isSubtle": true,
+                                            "spacing": "None",
+                                            "size": "Small"
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "text": "📅 ${date}",
+                                            "size": "Small",
+                                            "isSubtle": true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "spacing": "Small"
+                }
+            ],
+            "spacing": "Medium"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.Submit",
+            "title": "✅ Marcar como Resolvido",
+            "data": {
+                "action": "dismissAlerts"
+            }
+        },
+        {
+            "type": "Action.Submit",
+            "title": "🔄 Atualizar",
+            "data": {
+                "action": "refreshAlerts"
+            }
+        }
+    ]
+}
