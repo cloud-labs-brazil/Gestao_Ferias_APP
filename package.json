@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@mcp-consultant-tools/powerplatform": "^25.0.0",
+    "@microsoft/agents-copilotstudio-client": "^1.2.2",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@pnp/cli-microsoft365-mcp-server": "^0.1.17",
+    "powerplatform-mcp": "^1.0.1"
+  }
+}
