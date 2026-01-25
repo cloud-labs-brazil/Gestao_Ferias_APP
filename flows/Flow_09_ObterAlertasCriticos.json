@@ -1,0 +1,67 @@
+{
+    "name": "ObterAlertasCriticos",
+    "displayName": "Obter Alertas Críticos",
+    "description": "Retorna alertas críticos relacionados a férias (saldo vencendo, conflitos, etc)",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "email_colaborador": {
+                        "type": "string"
+                    },
+                    "gestor_email": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()"
+            }
+        },
+        "Get_Alertas": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Alertas_Ferias",
+                    "$filter": "Ativo eq true",
+                    "$orderby": "Prioridade desc"
+                }
+            }
+        },
+        "Response": {
+            "type": "Response",
+            "runAfter": {
+                "Get_Alertas": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "total_alertas": "@{length(body('Get_Alertas')?['value'])}",
+                    "alertas": "@{body('Get_Alertas')?['value']}"
+                }
+            }
+        }
+    }
+}

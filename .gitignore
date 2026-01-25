@@ -1,0 +1,15 @@
+# Copilot Studio Config - Gestão Férias
+
+## Ignored files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Environment files (keep these private)
+.env
+*.local
+
+# Large media files (optional)
+# *.webp
+# *.png

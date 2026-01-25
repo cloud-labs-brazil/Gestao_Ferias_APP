@@ -1,0 +1,176 @@
+{
+    "name": "CriarSolicitacao",
+    "displayName": "Criar Solicitação de Férias",
+    "description": "Cria nova solicitação de férias no SharePoint e notifica gestor",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "email_colaborador",
+                    "data_inicio",
+                    "data_fim"
+                ],
+                "properties": {
+                    "email_colaborador": {
+                        "type": "string"
+                    },
+                    "nome_colaborador": {
+                        "type": "string"
+                    },
+                    "data_inicio": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "data_fim": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "dias_uteis": {
+                        "type": "integer"
+                    },
+                    "tipo": {
+                        "type": "string",
+                        "default": "Férias"
+                    },
+                    "tem_conflito": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "observacoes": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "email_colaborador": {
+                            "type": "string"
+                        },
+                        "nome_colaborador": {
+                            "type": "string"
+                        },
+                        "data_inicio": {
+                            "type": "string"
+                        },
+                        "data_fim": {
+                            "type": "string"
+                        },
+                        "dias_uteis": {
+                            "type": "integer"
+                        },
+                        "tipo": {
+                            "type": "string"
+                        },
+                        "tem_conflito": {
+                            "type": "boolean"
+                        },
+                        "observacoes": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "Get_Aprovador": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Colaboradores_Aprovadores",
+                    "$filter": "Email eq '@{body('Parse_Request')?['email_colaborador']}'"
+                }
+            }
+        },
+        "Create_Solicitacao": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Aprovador": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "PostItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "item": {
+                        "Title": "Solicitação - @{body('Parse_Request')?['nome_colaborador']}",
+                        "ColaboradorEmail": "@{body('Parse_Request')?['email_colaborador']}",
+                        "ColaboradorNome": "@{body('Parse_Request')?['nome_colaborador']}",
+                        "DataInicio": "@{body('Parse_Request')?['data_inicio']}",
+                        "DataFim": "@{body('Parse_Request')?['data_fim']}",
+                        "DiasUteis": "@{coalesce(body('Parse_Request')?['dias_uteis'], 0)}",
+                        "Tipo": "@{coalesce(body('Parse_Request')?['tipo'], 'Férias')}",
+                        "Status": "Pendente",
+                        "AprovadorEmail": "@{first(body('Get_Aprovador')?['value'])?['AprovadorEmail']}",
+                        "Observacoes": "@{body('Parse_Request')?['observacoes']}",
+                        "CriadoPorBot": true
+                    }
+                }
+            }
+        },
+        "Send_Teams_Notification": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Create_Solicitacao": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_teams",
+                    "operationId": "PostMessageToConversation"
+                },
+                "parameters": {
+                    "poster": "Flow bot",
+                    "location": "Chat with Flow bot",
+                    "body/recipient": "@{first(body('Get_Aprovador')?['value'])?['AprovadorEmail']}",
+                    "body/messageBody": "🌴 **Nova Solicitação de Férias**\n\n**Colaborador:** @{body('Parse_Request')?['nome_colaborador']}\n**Período:** @{body('Parse_Request')?['data_inicio']} a @{body('Parse_Request')?['data_fim']}\n**Dias:** @{body('Parse_Request')?['dias_uteis']}\n\n⏳ Aguardando sua aprovação."
+                }
+            }
+        },
+        "Send_Response": {
+            "type": "Response",
+            "runAfter": {
+                "Send_Teams_Notification": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "id_solicitacao": "@{body('Create_Solicitacao')?['ID']}",
+                    "status": "Pendente",
+                    "aprovador_email": "@{first(body('Get_Aprovador')?['value'])?['AprovadorEmail']}",
+                    "aprovador_nome": "@{first(body('Get_Aprovador')?['value'])?['AprovadorNome']}",
+                    "mensagem": "Solicitação criada com sucesso. Aguardando aprovação do gestor."
+                }
+            }
+        }
+    }
+}

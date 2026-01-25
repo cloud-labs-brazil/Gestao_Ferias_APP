@@ -1,0 +1,71 @@
+{
+    "name": "ConsultarStatusSolicitacao",
+    "displayName": "Consultar Status da Solicitação",
+    "description": "Consulta o status de uma ou mais solicitações de férias do colaborador",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "email_colaborador"
+                ],
+                "properties": {
+                    "email_colaborador": {
+                        "type": "string"
+                    },
+                    "id_solicitacao": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()"
+            }
+        },
+        "Get_Solicitacoes": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "$filter": "ColaboradorEmail eq '@{body('Parse_Request')?['email_colaborador']}'",
+                    "$orderby": "Created desc",
+                    "$top": 10
+                }
+            }
+        },
+        "Response": {
+            "type": "Response",
+            "runAfter": {
+                "Get_Solicitacoes": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "total": "@{length(body('Get_Solicitacoes')?['value'])}",
+                    "solicitacoes": "@{body('Get_Solicitacoes')?['value']}"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,104 @@
+{
+  "name": "ConsultarSaldoFerias",
+  "displayName": "Consultar Saldo de Férias",
+  "description": "Consulta o saldo de férias disponível do colaborador na lista SharePoint",
+  "trigger": {
+    "type": "Request",
+    "kind": "Http",
+    "inputs": {
+      "schema": {
+        "type": "object",
+        "required": ["email_colaborador"],
+        "properties": {
+          "email_colaborador": {
+            "type": "string",
+            "description": "Email corporativo do colaborador"
+          }
+        }
+      }
+    }
+  },
+  "actions": {
+    "Parse_Request": {
+      "type": "ParseJson",
+      "inputs": {
+        "content": "@triggerBody()",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "email_colaborador": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Get_Saldo_From_SharePoint": {
+      "type": "OpenApiConnection",
+      "runAfter": { "Parse_Request": ["Succeeded"] },
+      "inputs": {
+        "host": {
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetItems"
+        },
+        "parameters": {
+          "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+          "table": "Saldo_Ferias",
+          "$filter": "ColaboradorEmail eq '@{body('Parse_Request')?['email_colaborador']}'"
+        }
+      }
+    },
+    "Check_If_Found": {
+      "type": "If",
+      "runAfter": { "Get_Saldo_From_SharePoint": ["Succeeded"] },
+      "expression": {
+        "and": [
+          {
+            "greater": [
+              "@length(body('Get_Saldo_From_SharePoint')?['value'])",
+              0
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Set_Success_Response": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "body": {
+              "sucesso": true,
+              "email": "@{body('Parse_Request')?['email_colaborador']}",
+              "saldo_dias": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['SaldoDisponivel']",
+              "saldo_total": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['SaldoTotal']",
+              "dias_usados": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['DiasUsados']",
+              "dias_agendados": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['DiasAgendados']",
+              "ano_referencia": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['AnoReferencia']",
+              "data_atualizacao": "@first(body('Get_Saldo_From_SharePoint')?['value'])?['DataAtualizacao']"
+            }
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Set_NotFound_Response": {
+            "type": "Response",
+            "kind": "Http",
+            "inputs": {
+              "statusCode": 200,
+              "body": {
+                "sucesso": false,
+                "erro": "Colaborador não encontrado",
+                "saldo_dias": 30,
+                "saldo_total": 30,
+                "dias_usados": 0,
+                "dias_agendados": 0,
+                "ano_referencia": 2026,
+                "mensagem": "Saldo padrão aplicado - colaborador novo"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+    "name": "VerificarConflitos",
+    "displayName": "Verificar Conflitos de Férias",
+    "description": "Verifica se o período solicitado conflita com férias já aprovadas de outros colaboradores do time",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "data_inicio",
+                    "data_fim",
+                    "email_colaborador"
+                ],
+                "properties": {
+                    "data_inicio": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "data_fim": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "email_colaborador": {
+                        "type": "string"
+                    },
+                    "departamento": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "data_inicio": {
+                            "type": "string"
+                        },
+                        "data_fim": {
+                            "type": "string"
+                        },
+                        "email_colaborador": {
+                            "type": "string"
+                        },
+                        "departamento": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "Get_Colaborador_Info": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Colaboradores_Aprovadores",
+                    "$filter": "Email eq '@{body('Parse_Request')?['email_colaborador']}'"
+                }
+            }
+        },
+        "Get_Ferias_Aprovadas": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Colaborador_Info": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "$filter": "Status eq 'Aprovado'"
+                }
+            }
+        },
+        "Filter_Conflicting_Dates": {
+            "type": "Query",
+            "runAfter": {
+                "Get_Ferias_Aprovadas": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "from": "@body('Get_Ferias_Aprovadas')?['value']",
+                "where": "@and(lessOrEquals(item()?['DataInicio'], body('Parse_Request')?['data_fim']), greaterOrEquals(item()?['DataFim'], body('Parse_Request')?['data_inicio']), not(equals(item()?['ColaboradorEmail'], body('Parse_Request')?['email_colaborador'])))"
+            }
+        },
+        "Build_Response": {
+            "type": "Response",
+            "runAfter": {
+                "Filter_Conflicting_Dates": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "tem_conflito": "@greater(length(body('Filter_Conflicting_Dates')), 0)",
+                    "total_conflitos": "@length(body('Filter_Conflicting_Dates'))",
+                    "colaboradores_conflito": "@body('Filter_Conflicting_Dates')",
+                    "periodo_verificado": {
+                        "data_inicio": "@{body('Parse_Request')?['data_inicio']}",
+                        "data_fim": "@{body('Parse_Request')?['data_fim']}"
+                    }
+                }
+            }
+        }
+    }
+}

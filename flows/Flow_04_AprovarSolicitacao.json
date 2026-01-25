@@ -1,0 +1,144 @@
+{
+    "name": "AprovarSolicitacao",
+    "displayName": "Aprovar Solicitação de Férias",
+    "description": "Aprova uma solicitação de férias pendente e notifica o colaborador",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "id_solicitacao",
+                    "aprovador_email"
+                ],
+                "properties": {
+                    "id_solicitacao": {
+                        "type": "integer"
+                    },
+                    "aprovador_email": {
+                        "type": "string"
+                    },
+                    "observacoes": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()"
+            }
+        },
+        "Get_Solicitacao": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "id": "@{body('Parse_Request')?['id_solicitacao']}"
+                }
+            }
+        },
+        "Update_Status_Aprovado": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Solicitacao": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "PatchItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "id": "@{body('Parse_Request')?['id_solicitacao']}",
+                    "item": {
+                        "Status": "Aprovado",
+                        "DataAprovacao": "@{utcNow()}",
+                        "Observacoes": "@{body('Parse_Request')?['observacoes']}"
+                    }
+                }
+            }
+        },
+        "Create_Historico": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Update_Status_Aprovado": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "PostItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Historico_Ferias",
+                    "item": {
+                        "Title": "@{body('Get_Solicitacao')?['ColaboradorNome']}",
+                        "ColaboradorEmail": "@{body('Get_Solicitacao')?['ColaboradorEmail']}",
+                        "DataInicio": "@{body('Get_Solicitacao')?['DataInicio']}",
+                        "DataFim": "@{body('Get_Solicitacao')?['DataFim']}",
+                        "DiasUteis": "@{body('Get_Solicitacao')?['DiasUteis']}",
+                        "Tipo": "@{body('Get_Solicitacao')?['Tipo']}",
+                        "Status": "Aprovado",
+                        "AnoReferencia": "@{formatDateTime(utcNow(), 'yyyy')}"
+                    }
+                }
+            }
+        },
+        "Notify_Colaborador_Teams": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Create_Historico": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_teams",
+                    "operationId": "PostMessageToConversation"
+                },
+                "parameters": {
+                    "body/recipient": "@{body('Get_Solicitacao')?['ColaboradorEmail']}",
+                    "body/messageBody": "✅ **Férias Aprovadas!**\n\n**Período:** @{body('Get_Solicitacao')?['DataInicio']} a @{body('Get_Solicitacao')?['DataFim']}\n**Dias:** @{body('Get_Solicitacao')?['DiasUteis']}\n\n🎉 Boas férias!"
+                }
+            }
+        },
+        "Response": {
+            "type": "Response",
+            "runAfter": {
+                "Notify_Colaborador_Teams": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "id_solicitacao": "@{body('Parse_Request')?['id_solicitacao']}",
+                    "status": "Aprovado",
+                    "mensagem": "Solicitação aprovada e colaborador notificado."
+                }
+            }
+        }
+    }
+}

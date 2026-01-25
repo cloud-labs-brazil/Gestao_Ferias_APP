@@ -1,0 +1,108 @@
+{
+    "name": "ObterDashboardGestor",
+    "displayName": "Dashboard do Gestor",
+    "description": "Retorna visão consolidada das férias do time para gestores",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "gestor_email"
+                ],
+                "properties": {
+                    "gestor_email": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()"
+            }
+        },
+        "Get_Time_Colaboradores": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Colaboradores_Aprovadores",
+                    "$filter": "AprovadorEmail eq '@{body('Parse_Request')?['gestor_email']}'"
+                }
+            }
+        },
+        "Get_Solicitacoes_Pendentes": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Time_Colaboradores": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "$filter": "AprovadorEmail eq '@{body('Parse_Request')?['gestor_email']}' and Status eq 'Pendente'"
+                }
+            }
+        },
+        "Get_Ferias_Aprovadas_90_dias": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Solicitacoes_Pendentes": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItems"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "$filter": "AprovadorEmail eq '@{body('Parse_Request')?['gestor_email']}' and Status eq 'Aprovado' and DataInicio le '@{addDays(utcNow(), 90)}'"
+                }
+            }
+        },
+        "Response": {
+            "type": "Response",
+            "runAfter": {
+                "Get_Ferias_Aprovadas_90_dias": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "total_colaboradores": "@{length(body('Get_Time_Colaboradores')?['value'])}",
+                    "pendentes": "@{length(body('Get_Solicitacoes_Pendentes')?['value'])}",
+                    "aprovadas_proximos_90_dias": "@{length(body('Get_Ferias_Aprovadas_90_dias')?['value'])}",
+                    "solicitacoes_pendentes": "@{body('Get_Solicitacoes_Pendentes')?['value']}",
+                    "ferias_aprovadas": "@{body('Get_Ferias_Aprovadas_90_dias')?['value']}",
+                    "colaboradores": "@{body('Get_Time_Colaboradores')?['value']}"
+                }
+            }
+        }
+    }
+}

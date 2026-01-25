@@ -1,0 +1,117 @@
+{
+    "name": "RejeitarSolicitacao",
+    "displayName": "Rejeitar Solicitação de Férias",
+    "description": "Rejeita uma solicitação de férias pendente e notifica o colaborador com o motivo",
+    "trigger": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+            "schema": {
+                "type": "object",
+                "required": [
+                    "id_solicitacao",
+                    "aprovador_email",
+                    "motivo"
+                ],
+                "properties": {
+                    "id_solicitacao": {
+                        "type": "integer"
+                    },
+                    "aprovador_email": {
+                        "type": "string"
+                    },
+                    "motivo": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "actions": {
+        "Parse_Request": {
+            "type": "ParseJson",
+            "inputs": {
+                "content": "@triggerBody()"
+            }
+        },
+        "Get_Solicitacao": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Parse_Request": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "GetItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "id": "@{body('Parse_Request')?['id_solicitacao']}"
+                }
+            }
+        },
+        "Update_Status_Rejeitado": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Get_Solicitacao": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "PatchItem"
+                },
+                "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "Solicitacoes_Ferias",
+                    "id": "@{body('Parse_Request')?['id_solicitacao']}",
+                    "item": {
+                        "Status": "Rejeitado",
+                        "DataAprovacao": "@{utcNow()}",
+                        "Observacoes": "@{body('Parse_Request')?['motivo']}"
+                    }
+                }
+            }
+        },
+        "Notify_Colaborador": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+                "Update_Status_Rejeitado": [
+                    "Succeeded"
+                ]
+            },
+            "inputs": {
+                "host": {
+                    "connectionName": "shared_teams",
+                    "operationId": "PostMessageToConversation"
+                },
+                "parameters": {
+                    "body/recipient": "@{body('Get_Solicitacao')?['ColaboradorEmail']}",
+                    "body/messageBody": "❌ **Solicitação de Férias Devolvida**\n\n**Período:** @{body('Get_Solicitacao')?['DataInicio']} a @{body('Get_Solicitacao')?['DataFim']}\n\n**Motivo:** @{body('Parse_Request')?['motivo']}\n\nPor favor, revise e faça uma nova solicitação se necessário."
+                }
+            }
+        },
+        "Response": {
+            "type": "Response",
+            "runAfter": {
+                "Notify_Colaborador": [
+                    "Succeeded"
+                ]
+            },
+            "kind": "Http",
+            "inputs": {
+                "statusCode": 200,
+                "body": {
+                    "sucesso": true,
+                    "id_solicitacao": "@{body('Parse_Request')?['id_solicitacao']}",
+                    "status": "Rejeitado",
+                    "mensagem": "Solicitação rejeitada e colaborador notificado."
+                }
+            }
+        }
+    }
+}
