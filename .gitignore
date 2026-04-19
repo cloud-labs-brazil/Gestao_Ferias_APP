@@ -17,8 +17,8 @@ Thumbs.db
 .idea/
 
 # ── Planning & Scratch (AI workspace) ─────
-.planning/
-scratch/
+# .planning/
+# scratch/
 
 # ── Uploaded media (screenshots, temp) ─────
 uploaded_media_*.png
