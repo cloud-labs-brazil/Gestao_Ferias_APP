@@ -1,7 +1,7 @@
 # 🧠 GEMINI.MD - Project Constitution
-> **Agente "Gestão Férias"** - Microsoft Copilot Studio  
-> **Status:** PLANNING PHASE  
-> **Last Updated:** 2026-01-25T04:36:00-03:00
+> **Gestão Férias** - Power Apps + SharePoint + Power Automate  
+> **Status:** EXECUTION PHASE (MVP)  
+> **Last Updated:** 2026-04-13T19:05:00-03:00
 
 ---
 
@@ -21,9 +21,10 @@
 
 | Property | Value |
 |----------|-------|
-| **Project Name** | Gestão Férias (Vacation Management Agent) |
-| **Platform** | Microsoft Copilot Studio |
-| **Backend** | SharePoint Online + Power Automate |
+| **Project Name** | Gestão Férias (Vacation Management) |
+| **Platform** | Power Apps (Canvas) + Power Automate |
+| **Backend** | SharePoint Online Lists (6) |
+| **Frontend** | Power Apps Canvas App in Teams |
 | **Target Users** | Employees + Managers (Minsait/Indra) |
 | **Tenant** | `indra365.sharepoint.com` |
 | **Admin Account** | `mbenicios@minsait.com` |
@@ -36,21 +37,21 @@
 
 ### 🎯 North Star
 **What is the singular desired outcome?**
-> A fully functional Copilot Studio agent that enables employees to:
-> - Query vacation balance
-> - Submit vacation requests (with conflict detection)
-> - Track approval status
-> - Managers: approve/reject requests and view team calendar
+> A functional vacation management app embedded in Teams that enables:
+> - Employees: query balance, submit requests (with conflict detection), track status
+> - Managers: approve/reject requests, view team calendar, track team vacations
+> - System: automated notifications, balance updates, audit history
 
 ### 🔗 Integrations
 **Which external services do we need? Are keys ready?**
 
 | Service | Purpose | Status | Notes |
 |---------|---------|--------|-------|
-| SharePoint Online | Data storage (6 lists) | 🟡 pending deploy | Scripts ready |
-| Power Automate | Business logic (10 flows) | ⏳ pending | Requires Premium license validation |
-| Copilot Studio | Agent hosting | ✅ ready | Agent "Gestão Férias" created |
-| Microsoft Teams | Delivery channel | ⏳ pending | Post go-live |
+| SharePoint Online | Data storage (6 lists) | ✅ deployed | 6 lists, 32 records |
+| Power Automate | Business logic (2 flows) | ⏳ pending | Standard license only (no Premium) |
+| Power Apps | Canvas App (5 screens) | ⏳ pending | Primary UI for employees + managers |
+| Microsoft Teams | Delivery channel + App host | ⏳ pending | Power App embedded as Teams tab |
+| Copilot Studio | Phase 2 Q&A assistant | 🔵 deferred | Read-only queries only |
 | PnP.PowerShell | Deployment automation | ✅ installed | v2.12/3.x |
 
 ### 📦 Source of Truth
@@ -71,10 +72,10 @@ SharePoint Site: indra365.sharepoint.com
 
 | Payload | Destination | Format |
 |---------|-------------|--------|
-| Agent Responses | Microsoft Teams Chat | Adaptive Cards + Text |
-| Approval Notifications | Teams + Email | Adaptive Cards |
-| Status Updates | Teams + Email | Rich text |
-| Manager Dashboard | Teams (via agent) | Formatted text/tables |
+| Vacation App | Microsoft Teams Tab | Power Apps Canvas App |
+| Approval Requests | Teams Approval Center | Approvals connector |
+| Status Notifications | Teams + Email | Power Automate notifications |
+| Manager Dashboard | Power App (manager view) | Canvas App screen |
 
 ### 📜 Behavioral Rules
 **How should the system "act"?**
@@ -88,7 +89,7 @@ SharePoint Site: indra365.sharepoint.com
 | BR-005 | Conflict detection is MANDATORY before submission | ✅ Confirmed |
 | BR-006 | All notifications via Teams AND Email | ✅ Confirmed |
 | BR-007 | No blackout periods | ✅ Confirmed (2026-01-25) |
-| BR-008 | Power Automate Premium license available | ✅ Confirmed (2026-01-25) |
+| BR-008 | Power Automate Standard license only (no Premium) | ✅ Confirmed (2026-04-13) |
 
 ---
 
@@ -198,7 +199,7 @@ SharePoint Site: indra365.sharepoint.com
 
 ### 4.1 Authentication Rules
 - All sensitive operations require authenticated user context
-- User identity is obtained from Copilot Studio authentication
+- User identity is obtained from Power Apps `User()` function (Azure AD SSO)
 
 ### 4.2 Conflict Detection Rules
 - Before ANY request submission, system MUST check for conflicts
@@ -223,45 +224,52 @@ IF (requested_days > available_balance) THEN reject with message
 
 ## 5. Architectural Invariants
 
-### Layer 1: Architecture (SOPs)
+### Layer 1: Documentation
 ```
 c:\VMs\Projects\Copilot_Studio_Config\
-├── Configuracao_Agente_Gestao_Ferias.md  → Agent configuration SOP
+├── docs/ADR-001-Architecture-Pivot.md    → Architecture decision record
+├── Configuracao_Agente_Gestao_Ferias.md  → Agent config (Phase 2 reference)
 ├── Deploy_CLI_SharePoint.md              → Deployment SOP
 ├── Visao_Gerencial_Gestao_Ferias.md      → Business overview SOP
-└── checklist.md                          → Implementation tracking
+└── Checklist_Implementacao.md            → Implementation tracking
 ```
 
-### Layer 2: Navigation (Decision Making)
-- Copilot Studio agent routes user intents to appropriate flows
-- Topics map to Power Automate flows
+### Layer 2: UI (Power Apps)
+- Canvas App with 5 screens: Home, New Request, My Requests, Approvals, Team Calendar
+- Role-based navigation (employee vs manager via Colaboradores_Aprovadores lookup)
+- Embedded in Teams as a tab/personal app
 
 ### Layer 3: Tools (Executors)
 ```
 c:\VMs\Projects\Copilot_Studio_Config\
-├── 01-Setup-Modulos.ps1     → Module installation
-├── 02-Deploy-Listas.ps1     → List creation
-└── 03-Importar-Dados.ps1    → Data import
+├── 01-Setup-Modulos.ps1        → Module installation
+├── 02-Deploy-Listas.ps1        → List creation
+├── 03-Importar-Dados.ps1       → Data import (bug fixed 2026-04-13)
+└── 05-Seed-Saldo-Ferias.ps1    → Balance seeding (new 2026-04-13)
 ```
 
 ---
 
 ## 6. Integration Endpoints
 
-### Power Automate Flows (To Be Created)
+### Power Automate Flows (MVP — 2 Flows, Standard License)
 
-| Flow Name | Trigger | Input | Output |
-|-----------|---------|-------|--------|
-| ConsultarSaldoFerias | HTTP | email | balance object |
-| VerificarConflitos | HTTP | dates, team_id | conflict object |
-| CriarSolicitacao | HTTP | request payload | request response |
-| AprovarSolicitacao | HTTP | request_id, decision | status |
-| RejeitarSolicitacao | HTTP | request_id, reason | status |
-| ConsultarStatusSolicitacao | HTTP | request_id | status object |
-| CancelarSolicitacao | HTTP | request_id, reason | status |
-| ObterDashboardGestor | HTTP | manager_email | dashboard data |
-| ObterAlertasCriticos | HTTP | - | alerts array |
-| EnviarNotificacaoTeams | HTTP | recipients, message | send status |
+> ⚠️ No Premium license available. Architecture optimized for Standard connectors only.
+
+| # | Flow Name | Trigger | Input | Output |
+|---|-----------|---------|-------|--------|
+| 1 | VacationApproval | SharePoint (item created) | auto from SP item | approval result + notifications |
+| 2 | ScheduledAlerts | Recurrence (weekly) | — | alert records + notifications |
+
+### Power Apps Embedded Logic (replaces Flows 3-5)
+
+| Function | Implementation | Notes |
+|----------|----------------|-------|
+| Submit Request | `Patch()` → Solicitacoes_Ferias | Creates SP item, triggers Flow 1 |
+| Cancel Request | `Patch()` → Status="CANCELLED" | Direct SP update, no flow needed |
+| Check Conflicts | `Filter()` → Solicitacoes_Ferias | Real-time query by department + dates |
+| Balance Validation | `LookUp()` → Saldo_Ferias | Client-side check before submit |
+| Date Validation | Power Apps formulas | BR-001 to BR-003 rules enforced |
 
 ---
 
@@ -271,6 +279,13 @@ c:\VMs\Projects\Copilot_Studio_Config\
 |------|--------|--------|-------|
 | 2026-01-25 04:10 | Project initialized | ✅ | B.L.A.S.T. protocol started |
 | 2026-01-25 04:36 | gemini.md created | ✅ | Project constitution established |
+| 2026-04-13 19:05 | **Architecture pivot approved** | ✅ | Copilot Studio → Power Apps + PA + SP |
+| 2026-04-13 19:05 | Boolean bug fixed (03-Importar-Dados.ps1) | ✅ | R-003/TD-001 resolved |
+| 2026-04-13 19:05 | Balance seeding script created | ✅ | 05-Seed-Saldo-Ferias.ps1 |
+| 2026-04-13 19:26 | **No Premium license confirmed** | ✅ | 5 flows → 2 flows + Power Apps logic |
+| 2026-04-13 19:50 | Flow blueprints created | ✅ | VacationApproval + ScheduledAlerts build guides |
+| 2026-04-13 19:50 | Power Apps formula reference created | ✅ | All Power Fx for 5 screens |
+| 2026-04-13 19:50 | Non-designer guide created | ✅ | Modern Controls + Fluent 2 themes |
 
 ---
 

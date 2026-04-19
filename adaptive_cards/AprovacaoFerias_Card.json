@@ -1,0 +1,115 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Image",
+                  "url": "https://img.icons8.com/fluency/48/beach.png",
+                  "size": "Medium"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "Solicitação de Férias",
+                  "weight": "Bolder",
+                  "size": "Large",
+                  "color": "Accent"
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "Aprovação pendente",
+                  "spacing": "None",
+                  "isSubtle": true
+                }
+              ],
+              "verticalContentAlignment": "Center"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            {
+              "title": "Colaborador:",
+              "value": "${employeeName}"
+            },
+            {
+              "title": "E-mail:",
+              "value": "${employeeEmail}"
+            },
+            {
+              "title": "Período:",
+              "value": "${startDate} a ${endDate}"
+            },
+            {
+              "title": "Total de dias:",
+              "value": "${totalDays} dias úteis"
+            },
+            {
+              "title": "Observações:",
+              "value": "${notes}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "Comentário (opcional):",
+          "weight": "Bolder",
+          "spacing": "Medium"
+        },
+        {
+          "type": "Input.Text",
+          "id": "comments",
+          "placeholder": "Adicione um comentário...",
+          "isMultiline": true,
+          "maxLength": 500
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "✅ Aprovar",
+      "style": "positive",
+      "data": {
+        "action": "approve"
+      }
+    },
+    {
+      "type": "Action.Submit",
+      "title": "❌ Rejeitar",
+      "style": "destructive",
+      "data": {
+        "action": "reject"
+      }
+    }
+  ]
+}

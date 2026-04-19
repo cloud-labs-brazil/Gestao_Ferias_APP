@@ -1,0 +1,135 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "gstf_sharepoint"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "triggerAuthenticationType": "All",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "cb243abf-de38-40db-bc58-5f1378a7e918"
+          }
+        }
+      },
+      "actions": {
+        "Sanitizar_Email": {
+          "type": "Compose",
+          "inputs": "@replace(trim(toLower(triggerBody()?['email'])),'''','''''')",
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "http-obteritens-sanitize-email"
+          }
+        },
+        "Obter_itens": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias",
+              "$filter": "ColaboradorEmail eq '@{outputs('Sanitizar_Email')}'"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          },
+          "runAfter": {
+            "Sanitizar_Email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "40e958bf-dd23-43bb-bc8c-7910a03fbc73"
+          }
+        },
+        "Resposta_Erro": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "ERRO_OBTER_ITENS",
+              "message": "Falha ao consultar itens."
+            }
+          },
+          "runAfter": {
+            "Obter_itens": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "http-obteritens-response-error"
+          }
+        },
+        "Resposta": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": true,
+              "count": "@{length(body('Obter_itens')?['value'])}",
+              "data": "@{body('Obter_itens')?['value']}"
+            }
+          },
+          "runAfter": {
+            "Obter_itens": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "http-obteritens-response"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,136 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_2b2bc"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Email do colaborador"
+                }
+              },
+              "required": [
+                "email"
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "get-minhas-solicitacoes-trigger"
+          }
+        }
+      },
+      "actions": {
+        "Sanitizar_Email": {
+          "type": "Compose",
+          "inputs": "@replace(trim(toLower(triggerBody()?['email'])),'''','''''')",
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "get-minhas-solicitacoes-sanitize-email"
+          }
+        },
+        "Obter_itens": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias",
+              "$filter": "ColaboradorEmail eq '@{outputs('Sanitizar_Email')}'",
+              "$orderby": "DataInicio desc",
+              "$top": 10
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Sanitizar_Email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-minhas-solicitacoes-getitems"
+          }
+        },
+        "Resposta_Erro": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "ERRO_CONSULTA_SOLICITACOES",
+              "message": "Falha ao consultar solicitações do colaborador."
+            }
+          },
+          "runAfter": {
+            "Obter_itens": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-minhas-solicitacoes-response-error"
+          }
+        },
+        "Resposta": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": true,
+              "data": "@{body('Obter_itens')?['value']}"
+            }
+          },
+          "runAfter": {
+            "Obter_itens": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-minhas-solicitacoes-response"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

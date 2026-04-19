@@ -1,0 +1,564 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_2b2bc"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "solicitacaoId": {
+                  "type": "integer",
+                  "description": "ID da solicitação"
+                },
+                "action": {
+                  "type": "string",
+                  "description": "approve ou reject"
+                },
+                "aprovadorEmail": {
+                  "type": "string",
+                  "description": "Email do aprovador"
+                },
+                "motivo": {
+                  "type": "string",
+                  "description": "Motivo da rejeição (opcional)"
+                }
+              },
+              "required": [
+                "solicitacaoId",
+                "action",
+                "aprovadorEmail"
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "aprovar-solicitacao-trigger"
+          }
+        }
+      },
+      "actions": {
+        "Obter_Solicitacao": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias",
+              "id": "@{triggerBody()?['solicitacaoId']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "aprovar-get-solicitacao"
+          }
+        },
+        "Resposta_Erro_Obter_Solicitacao": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 404,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "SOLICITACAO_NAO_ENCONTRADA",
+              "message": "Não foi possível localizar a solicitação informada."
+            }
+          },
+          "runAfter": {
+            "Obter_Solicitacao": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "aprovar-response-getitem-failed"
+          }
+        },
+        "Condition_Entrada_Valida": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "or": [
+                  {
+                    "equals": [
+                      "@toLower(triggerBody()?['action'])",
+                      "approve"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@toLower(triggerBody()?['action'])",
+                      "reject"
+                    ]
+                  }
+                ]
+              },
+              {
+                "not": {
+                  "equals": [
+                    "@trim(triggerBody()?['aprovadorEmail'])",
+                    ""
+                  ]
+                }
+              }
+            ]
+          },
+          "actions": {
+            "Condition_Aprovador_Autorizado": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@toLower(trim(triggerBody()?['aprovadorEmail']))",
+                      "@toLower(trim(body('Obter_Solicitacao')?['AprovadorEmail']))"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Condition_Solicitacao_Pendente": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@body('Obter_Solicitacao')?['Status']",
+                          "Pendente"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Condition_Action": {
+                      "type": "If",
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@toLower(triggerBody()?['action'])",
+                              "approve"
+                            ]
+                          }
+                        ]
+                      },
+                      "actions": {
+                        "Atualizar_Status_Aprovado": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                              "table": "Solicitacoes_Ferias",
+                              "id": "@{triggerBody()?['solicitacaoId']}",
+                              "item": {
+                                "Title": "Solicitação Aprovada",
+                                "Status": "Aprovado",
+                                "DataAprovacao": "@{utcNow()}"
+                              }
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "PatchItem",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          },
+                          "metadata": {
+                            "operationMetadataId": "aprovar-update-aprovado"
+                          }
+                        },
+                        "Resposta_Aprovado": {
+                          "type": "Response",
+                          "kind": "Http",
+                          "inputs": {
+                            "statusCode": 200,
+                            "headers": {
+                              "Content-Type": "application/json"
+                            },
+                            "body": {
+                              "success": true,
+                              "newStatus": "Aprovado",
+                              "message": "Solicitação aprovada com sucesso."
+                            }
+                          },
+                          "runAfter": {
+                            "Atualizar_Status_Aprovado": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "aprovar-response-aprovado"
+                          }
+                        },
+                        "Resposta_Erro_Aprovacao": {
+                          "type": "Response",
+                          "kind": "Http",
+                          "inputs": {
+                            "statusCode": 500,
+                            "headers": {
+                              "Content-Type": "application/json"
+                            },
+                            "body": {
+                              "success": false,
+                              "error": "ERRO_APROVACAO",
+                              "message": "Falha ao atualizar status para aprovado."
+                            }
+                          },
+                          "runAfter": {
+                            "Atualizar_Status_Aprovado": [
+                              "Failed",
+                              "TimedOut"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "aprovar-response-aprovacao-failed"
+                          }
+                        }
+                      },
+                      "else": {
+                        "actions": {
+                          "Obter_Saldo_Para_Restaurar": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                "table": "SALDO_ATUAL",
+                                "$filter": "ColaboradorEmail eq '@{body('Obter_Solicitacao')?['ColaboradorEmail']}'"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GetItems",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            },
+                            "metadata": {
+                              "operationMetadataId": "aprovar-get-saldo"
+                            }
+                          },
+                          "Resposta_Erro_Obter_Saldo": {
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                              "statusCode": 500,
+                              "headers": {
+                                "Content-Type": "application/json"
+                              },
+                              "body": {
+                                "success": false,
+                                "error": "ERRO_OBTER_SALDO",
+                                "message": "Falha ao carregar saldo para restauração."
+                              }
+                            },
+                            "runAfter": {
+                              "Obter_Saldo_Para_Restaurar": [
+                                "Failed",
+                                "TimedOut"
+                              ]
+                            },
+                            "metadata": {
+                              "operationMetadataId": "aprovar-response-get-saldo-failed"
+                            }
+                          },
+                          "Condition_Saldo_Existe": {
+                            "type": "If",
+                            "expression": {
+                              "and": [
+                                {
+                                  "greater": [
+                                    "@length(body('Obter_Saldo_Para_Restaurar')?['value'])",
+                                    0
+                                  ]
+                                }
+                              ]
+                            },
+                            "actions": {
+                              "Restaurar_Saldo": {
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "parameters": {
+                                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                    "table": "SALDO_ATUAL",
+                                    "id": "@{first(body('Obter_Saldo_Para_Restaurar')?['value'])?['ID']}",
+                                    "item": {
+                                      "Title": "Saldo Atualizado",
+                                      "DiasAgendados": "@{sub(first(body('Obter_Saldo_Para_Restaurar')?['value'])?['DiasAgendados'], body('Obter_Solicitacao')?['DiasUteis'])}",
+                                      "SaldoDisponivel": "@{add(first(body('Obter_Saldo_Para_Restaurar')?['value'])?['SaldoDisponivel'], body('Obter_Solicitacao')?['DiasUteis'])}",
+                                      "DataAtualizacao": "@{utcNow()}"
+                                    }
+                                  },
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                    "operationId": "PatchItem",
+                                    "connectionName": "shared_sharepointonline"
+                                  }
+                                },
+                                "runAfter": {},
+                                "metadata": {
+                                  "operationMetadataId": "aprovar-restore-saldo"
+                                }
+                              },
+                              "Resposta_Erro_Restaurar_Saldo": {
+                                "type": "Response",
+                                "kind": "Http",
+                                "inputs": {
+                                  "statusCode": 500,
+                                  "headers": {
+                                    "Content-Type": "application/json"
+                                  },
+                                  "body": {
+                                    "success": false,
+                                    "error": "ERRO_RESTAURAR_SALDO",
+                                    "message": "Falha ao restaurar saldo durante rejeição."
+                                  }
+                                },
+                                "runAfter": {
+                                  "Restaurar_Saldo": [
+                                    "Failed",
+                                    "TimedOut"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "aprovar-response-restore-saldo-failed"
+                                }
+                              },
+                              "Atualizar_Status_Rejeitado": {
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "parameters": {
+                                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                    "table": "Solicitacoes_Ferias",
+                                    "id": "@{triggerBody()?['solicitacaoId']}",
+                                    "item": {
+                                      "Title": "Solicitação Rejeitada",
+                                      "Status": "Rejeitado",
+                                      "MotivoRejeicao": "@{triggerBody()?['motivo']}",
+                                      "DataAprovacao": "@{utcNow()}"
+                                    }
+                                  },
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                    "operationId": "PatchItem",
+                                    "connectionName": "shared_sharepointonline"
+                                  }
+                                },
+                                "runAfter": {
+                                  "Restaurar_Saldo": [
+                                    "Succeeded"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "aprovar-update-rejeitado"
+                                }
+                              },
+                              "Resposta_Rejeitado": {
+                                "type": "Response",
+                                "kind": "Http",
+                                "inputs": {
+                                  "statusCode": 200,
+                                  "headers": {
+                                    "Content-Type": "application/json"
+                                  },
+                                  "body": {
+                                    "success": true,
+                                    "newStatus": "Rejeitado",
+                                    "message": "Solicitação rejeitada. Saldo restaurado."
+                                  }
+                                },
+                                "runAfter": {
+                                  "Atualizar_Status_Rejeitado": [
+                                    "Succeeded"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "aprovar-response-rejeitado"
+                                }
+                              },
+                              "Resposta_Erro_Atualizar_Rejeicao": {
+                                "type": "Response",
+                                "kind": "Http",
+                                "inputs": {
+                                  "statusCode": 500,
+                                  "headers": {
+                                    "Content-Type": "application/json"
+                                  },
+                                  "body": {
+                                    "success": false,
+                                    "error": "ERRO_STATUS_REJEICAO",
+                                    "message": "Falha ao atualizar solicitação para rejeitado."
+                                  }
+                                },
+                                "runAfter": {
+                                  "Atualizar_Status_Rejeitado": [
+                                    "Failed",
+                                    "TimedOut"
+                                  ]
+                                },
+                                "metadata": {
+                                  "operationMetadataId": "aprovar-response-update-rejeitado-failed"
+                                }
+                              }
+                            },
+                            "else": {
+                              "actions": {
+                                "Resposta_Saldo_Nao_Encontrado": {
+                                  "type": "Response",
+                                  "kind": "Http",
+                                  "inputs": {
+                                    "statusCode": 404,
+                                    "headers": {
+                                      "Content-Type": "application/json"
+                                    },
+                                    "body": {
+                                      "success": false,
+                                      "error": "SALDO_NAO_ENCONTRADO",
+                                      "message": "Registro de saldo não encontrado para restauração."
+                                    }
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "aprovar-response-no-saldo"
+                                  }
+                                }
+                              }
+                            },
+                            "runAfter": {
+                              "Obter_Saldo_Para_Restaurar": [
+                                "Succeeded"
+                              ]
+                            },
+                            "metadata": {
+                              "operationMetadataId": "aprovar-condition-saldo-existe"
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "aprovar-condition"
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Resposta_Status_Invalido": {
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                          "statusCode": 409,
+                          "headers": {
+                            "Content-Type": "application/json"
+                          },
+                          "body": {
+                            "success": false,
+                            "error": "STATUS_INVALIDO",
+                            "message": "A solicitação já foi processada e não pode ser alterada."
+                          }
+                        },
+                        "metadata": {
+                          "operationMetadataId": "aprovar-response-status-invalido"
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "aprovar-condition-pendente"
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Resposta_Aprovador_Nao_Autorizado": {
+                    "type": "Response",
+                    "kind": "Http",
+                    "inputs": {
+                      "statusCode": 403,
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "body": {
+                        "success": false,
+                        "error": "APROVADOR_NAO_AUTORIZADO",
+                        "message": "O aprovador informado não corresponde ao aprovador da solicitação."
+                      }
+                    },
+                    "metadata": {
+                      "operationMetadataId": "aprovar-response-unauthorized"
+                    }
+                  }
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "aprovar-condition-aprovador-autorizado"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Resposta_Entrada_Invalida": {
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                  "statusCode": 400,
+                  "headers": {
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "success": false,
+                    "error": "ENTRADA_INVALIDA",
+                    "message": "Parâmetros inválidos. Use action=approve ou action=reject e informe aprovadorEmail."
+                  }
+                },
+                "metadata": {
+                  "operationMetadataId": "aprovar-response-input-invalid"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Obter_Solicitacao": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "aprovar-condition-input-valido"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

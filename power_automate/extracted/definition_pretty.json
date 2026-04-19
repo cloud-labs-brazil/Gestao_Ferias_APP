@@ -1,0 +1,417 @@
+﻿{
+    "name":  "66b1bad4-5c97-47ef-955a-9f44cf174aa7",
+    "id":  "/providers/Microsoft.Flow/flows/66b1bad4-5c97-47ef-955a-9f44cf174aa7",
+    "type":  "Microsoft.Flow/flows",
+    "properties":  {
+                       "apiId":  "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+                       "displayName":  "GestaoFerias_VacationApproval",
+                       "definition":  {
+                                          "metadata":  {
+                                                           "workflowEntityId":  null,
+                                                           "processAdvisorMetadata":  null,
+                                                           "flowChargedByPaygo":  null,
+                                                           "flowclientsuspensionreason":  "None",
+                                                           "flowclientsuspensiontime":  null,
+                                                           "flowclientsuspensionreasondetails":  null,
+                                                           "creator":  {
+                                                                           "id":  "3882eb28-005d-4948-a668-81263d778f6d",
+                                                                           "type":  "User",
+                                                                           "tenantId":  "7808e005-1489-4374-954b-d3b08f193920"
+                                                                       },
+                                                           "provisioningMethod":  "FromDefinition",
+                                                           "failureAlertSubscription":  true,
+                                                           "clientLastModifiedTime":  "2026-04-18T18:00:41.0946142Z",
+                                                           "connectionKeySavedTimeKey":  "2026-04-18T18:00:41.0946142Z",
+                                                           "creationSource":  null
+                                                       },
+                                          "$schema":  "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                                          "contentVersion":  "1.0.0.0",
+                                          "parameters":  {
+                                                             "$connections":  {
+                                                                                  "defaultValue":  {
+
+                                                                                                   },
+                                                                                  "type":  "Object"
+                                                                              },
+                                                             "$authentication":  {
+                                                                                     "defaultValue":  {
+
+                                                                                                      },
+                                                                                     "type":  "SecureObject"
+                                                                                 }
+                                                         },
+                                          "triggers":  {
+                                                           "When_an_item_is_created":  {
+                                                                                           "recurrence":  {
+                                                                                                              "frequency":  "Minute",
+                                                                                                              "interval":  3
+                                                                                                          },
+                                                                                           "evaluatedRecurrence":  {
+                                                                                                                       "frequency":  "Minute",
+                                                                                                                       "interval":  3
+                                                                                                                   },
+                                                                                           "splitOn":  "@triggerOutputs()?[\u0027body/value\u0027]",
+                                                                                           "type":  "OpenApiConnection",
+                                                                                           "inputs":  {
+                                                                                                          "host":  {
+                                                                                                                       "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                       "connectionName":  "shared_sharepointonline",
+                                                                                                                       "operationId":  "GetOnNewItems"
+                                                                                                                   },
+                                                                                                          "parameters":  {
+                                                                                                                             "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                             "table":  "8a605bcd-d27c-449c-8722-d51094184ade"
+                                                                                                                         },
+                                                                                                          "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                      }
+                                                                                       }
+                                                       },
+                                          "actions":  {
+                                                          "Initialize_varApproverEmail":  {
+                                                                                              "runAfter":  {
+
+                                                                                                           },
+                                                                                              "type":  "InitializeVariable",
+                                                                                              "inputs":  {
+                                                                                                             "variables":  [
+                                                                                                                               {
+                                                                                                                                   "name":  "varApproverEmail",
+                                                                                                                                   "type":  "String",
+                                                                                                                                   "value":  "@triggerOutputs()?[\u0027body/AprovadorEmail\u0027]"
+                                                                                                                               }
+                                                                                                                           ]
+                                                                                                         }
+                                                                                          },
+                                                          "Initialize_varEmployeeEmail":  {
+                                                                                              "runAfter":  {
+                                                                                                               "Initialize_varApproverEmail":  [
+                                                                                                                                                   "Succeeded"
+                                                                                                                                               ]
+                                                                                                           },
+                                                                                              "type":  "InitializeVariable",
+                                                                                              "inputs":  {
+                                                                                                             "variables":  [
+                                                                                                                               {
+                                                                                                                                   "name":  "varEmployeeEmail",
+                                                                                                                                   "type":  "String",
+                                                                                                                                   "value":  "@triggerOutputs()?[\u0027body/ColaboradorEmail\u0027]"
+                                                                                                                               }
+                                                                                                                           ]
+                                                                                                         }
+                                                                                          },
+                                                          "Initialize_varRequestId":  {
+                                                                                          "runAfter":  {
+                                                                                                           "Initialize_varEmployeeEmail":  [
+                                                                                                                                               "Succeeded"
+                                                                                                                                           ]
+                                                                                                       },
+                                                                                          "type":  "InitializeVariable",
+                                                                                          "inputs":  {
+                                                                                                         "variables":  [
+                                                                                                                           {
+                                                                                                                               "name":  "varRequestId",
+                                                                                                                               "type":  "Integer",
+                                                                                                                               "value":  "@triggerOutputs()?[\u0027body/ID\u0027]"
+                                                                                                                           }
+                                                                                                                       ]
+                                                                                                     }
+                                                                                      },
+                                                          "GetEmployeeDetails":  {
+                                                                                     "runAfter":  {
+                                                                                                      "Initialize_varRequestId":  [
+                                                                                                                                      "Succeeded"
+                                                                                                                                  ]
+                                                                                                  },
+                                                                                     "type":  "OpenApiConnection",
+                                                                                     "inputs":  {
+                                                                                                    "host":  {
+                                                                                                                 "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                 "connectionName":  "shared_sharepointonline",
+                                                                                                                 "operationId":  "GetItems"
+                                                                                                             },
+                                                                                                    "parameters":  {
+                                                                                                                       "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                       "table":  "7999e98b-a6c5-48da-92c9-13ba23eafff0",
+                                                                                                                       "$filter":  "Email eq \u0027@{variables(\u0027varEmployeeEmail\u0027)}\u0027",
+                                                                                                                       "$top":  1
+                                                                                                                   },
+                                                                                                    "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                }
+                                                                                 },
+                                                          "Condition_Status_PENDING":  {
+                                                                                           "actions":  {
+                                                                                                           "PostApprovalCard":  {
+                                                                                                                                    "type":  "OpenApiConnectionWebhook",
+                                                                                                                                    "inputs":  {
+                                                                                                                                                   "host":  {
+                                                                                                                                                                "apiId":  "/providers/Microsoft.PowerApps/apis/shared_teams",
+                                                                                                                                                                "connectionName":  "shared_teams",
+                                                                                                                                                                "operationId":  "PostCardAndWaitForResponse"
+                                                                                                                                                            },
+                                                                                                                                                   "parameters":  {
+                                                                                                                                                                      "poster":  "Flow bot",
+                                                                                                                                                                      "location":  "Chat with Flow bot",
+                                                                                                                                                                      "body/body/recipient/to":  "@{variables(\u0027varApproverEmail\u0027)}",
+                                                                                                                                                                      "body/body/messageBody":  "{\n  \"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",\n  \"type\": \"AdaptiveCard\",\n  \"version\": \"1.4\",\n  \"body\": [\n    {\n      \"type\": \"Container\",\n      \"style\": \"emphasis\",\n      \"items\": [\n        {\n          \"type\": \"TextBlock\",\n          \"text\": \"Solicitacao de Ferias\",\n          \"weight\": \"Bolder\",\n          \"size\": \"Large\",\n          \"color\": \"Accent\"\n        },\n        {\n          \"type\": \"TextBlock\",\n          \"text\": \"Aprovacao pendente\",\n          \"spacing\": \"None\",\n          \"isSubtle\": true\n        }\n      ]\n    },\n    {\n      \"type\": \"FactSet\",\n      \"facts\": [\n        {\n          \"title\": \"Colaborador:\",\n          \"value\": \"@{first(outputs(\u0027GetEmployeeDetails\u0027)?[\u0027body/value\u0027])?[\u0027NomeCompleto\u0027]}\"\n        },\n        {\n          \"title\": \"E-mail:\",\n          \"value\": \"@{variables(\u0027varEmployeeEmail\u0027)}\"\n        },\n        {\n          \"title\": \"Periodo:\",\n          \"value\": \"@{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}\"\n        },\n        {\n          \"title\": \"Total de dias:\",\n          \"value\": \"@{triggerOutputs()?[\u0027body/DiasUteis\u0027]} dias uteis\"\n        },\n        {\n          \"title\": \"Observacoes:\",\n          \"value\": \"@{triggerOutputs()?[\u0027body/Observacoes\u0027]}\"\n        }\n      ]\n    },\n    {\n      \"type\": \"TextBlock\",\n      \"text\": \"Comentario (opcional):\",\n      \"weight\": \"Bolder\",\n      \"spacing\": \"Medium\"\n    },\n    {\n      \"type\": \"Input.Text\",\n      \"id\": \"comments\",\n      \"placeholder\": \"Adicione um comentario...\",\n      \"isMultiline\": true,\n      \"maxLength\": 500\n    }\n  ],\n  \"actions\": [\n    {\n      \"type\": \"Action.Submit\",\n      \"title\": \"Aprovar\",\n      \"style\": \"positive\",\n      \"data\": {\n        \"action\": \"approve\"\n      }\n    },\n    {\n      \"type\": \"Action.Submit\",\n      \"title\": \"Rejeitar\",\n      \"style\": \"destructive\",\n      \"data\": {\n        \"action\": \"reject\"\n      }\n    }\n  ]\n}"
+                                                                                                                                                                  },
+                                                                                                                                                   "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                               }
+                                                                                                                                },
+                                                                                                           "Condition_Approved":  {
+                                                                                                                                      "actions":  {
+                                                                                                                                                      "Update_Status_APPROVED":  {
+                                                                                                                                                                                     "type":  "OpenApiConnection",
+                                                                                                                                                                                     "inputs":  {
+                                                                                                                                                                                                    "host":  {
+                                                                                                                                                                                                                 "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                                                                                                                 "connectionName":  "shared_sharepointonline",
+                                                                                                                                                                                                                 "operationId":  "PatchItem"
+                                                                                                                                                                                                             },
+                                                                                                                                                                                                    "parameters":  {
+                                                                                                                                                                                                                       "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                                                                                                                       "table":  "8a605bcd-d27c-449c-8722-d51094184ade",
+                                                                                                                                                                                                                       "id":  "@variables(\u0027varRequestId\u0027)",
+                                                                                                                                                                                                                       "item/Title":  "@{triggerOutputs()?[\u0027body/Title\u0027]}@{utcNow()}",
+                                                                                                                                                                                                                       "item/Status":  "APPROVED"
+                                                                                                                                                                                                                   },
+                                                                                                                                                                                                    "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                }
+                                                                                                                                                                                 },
+                                                                                                                                                      "GetCurrentBalance":  {
+                                                                                                                                                                                "runAfter":  {
+                                                                                                                                                                                                 "Update_Status_APPROVED":  [
+                                                                                                                                                                                                                                "Succeeded"
+                                                                                                                                                                                                                            ]
+                                                                                                                                                                                             },
+                                                                                                                                                                                "type":  "OpenApiConnection",
+                                                                                                                                                                                "inputs":  {
+                                                                                                                                                                                               "host":  {
+                                                                                                                                                                                                            "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                                                                                                            "connectionName":  "shared_sharepointonline",
+                                                                                                                                                                                                            "operationId":  "GetItems"
+                                                                                                                                                                                                        },
+                                                                                                                                                                                               "parameters":  {
+                                                                                                                                                                                                                  "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                                                                                                                  "table":  "a40b3918-e16d-4ee8-b621-4fafde78cebe",
+                                                                                                                                                                                                                  "$filter":  "ColaboradorEmail eq \u0027@{variables(\u0027varEmployeeEmail\u0027)}\u0027",
+                                                                                                                                                                                                                  "$top":  1
+                                                                                                                                                                                                              },
+                                                                                                                                                                                               "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                           }
+                                                                                                                                                                            },
+                                                                                                                                                      "Update_Balance_Deduct":  {
+                                                                                                                                                                                    "runAfter":  {
+                                                                                                                                                                                                     "GetCurrentBalance":  [
+                                                                                                                                                                                                                               "Succeeded"
+                                                                                                                                                                                                                           ]
+                                                                                                                                                                                                 },
+                                                                                                                                                                                    "type":  "OpenApiConnection",
+                                                                                                                                                                                    "inputs":  {
+                                                                                                                                                                                                   "host":  {
+                                                                                                                                                                                                                "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                                                                                                                "connectionName":  "shared_sharepointonline",
+                                                                                                                                                                                                                "operationId":  "PatchItem"
+                                                                                                                                                                                                            },
+                                                                                                                                                                                                   "parameters":  {
+                                                                                                                                                                                                                      "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                                                                                                                      "table":  "a40b3918-e16d-4ee8-b621-4fafde78cebe",
+                                                                                                                                                                                                                      "id":  "@{first(outputs(\u0027GetCurrentBalance\u0027)?[\u0027body/value\u0027])?[\u0027ID\u0027]}",
+                                                                                                                                                                                                                      "item/Title":  "@{first(outputs(\u0027GetCurrentBalance\u0027)?[\u0027body/value\u0027])?[\u0027Title\u0027]}",
+                                                                                                                                                                                                                      "item/SaldoDisponivel":  "@{sub(first(outputs(\u0027GetCurrentBalance\u0027)?[\u0027body/value\u0027])?[\u0027SaldoDisponivel\u0027], triggerOutputs()?[\u0027body/DiasUteis\u0027])}"
+                                                                                                                                                                                                                  },
+                                                                                                                                                                                                   "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                               }
+                                                                                                                                                                                },
+                                                                                                                                                      "Notify_Employee_Teams_Approved":  {
+                                                                                                                                                                                             "runAfter":  {
+                                                                                                                                                                                                              "Update_Balance_Deduct":  [
+                                                                                                                                                                                                                                            "Succeeded"
+                                                                                                                                                                                                                                        ]
+                                                                                                                                                                                                          },
+                                                                                                                                                                                             "type":  "OpenApiConnection",
+                                                                                                                                                                                             "inputs":  {
+                                                                                                                                                                                                            "host":  {
+                                                                                                                                                                                                                         "apiId":  "/providers/Microsoft.PowerApps/apis/shared_teams",
+                                                                                                                                                                                                                         "connectionName":  "shared_teams",
+                                                                                                                                                                                                                         "operationId":  "PostMessageToConversation"
+                                                                                                                                                                                                                     },
+                                                                                                                                                                                                            "parameters":  {
+                                                                                                                                                                                                                               "poster":  "Flow bot",
+                                                                                                                                                                                                                               "location":  "Chat with Flow bot",
+                                                                                                                                                                                                                               "body/recipient":  "@{variables(\u0027varEmployeeEmail\u0027)}",
+                                                                                                                                                                                                                               "body/messageBody":  "Suas ferias foram APROVADAS!\n\nPeriodo: @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}\nTotal: @{triggerOutputs()?[\u0027body/DiasUteis\u0027]} dias\n\nAprovado por: @{variables(\u0027varApproverEmail\u0027)}"
+                                                                                                                                                                                                                           },
+                                                                                                                                                                                                            "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                        }
+                                                                                                                                                                                         },
+                                                                                                                                                      "Notify_Employee_Email_Approved":  {
+                                                                                                                                                                                             "runAfter":  {
+                                                                                                                                                                                                              "Notify_Employee_Teams_Approved":  [
+                                                                                                                                                                                                                                                     "Succeeded",
+                                                                                                                                                                                                                                                     "Failed",
+                                                                                                                                                                                                                                                     "Skipped"
+                                                                                                                                                                                                                                                 ]
+                                                                                                                                                                                                          },
+                                                                                                                                                                                             "type":  "OpenApiConnection",
+                                                                                                                                                                                             "inputs":  {
+                                                                                                                                                                                                            "host":  {
+                                                                                                                                                                                                                         "apiId":  "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                                                                                                                                                                                                         "connectionName":  "shared_office365",
+                                                                                                                                                                                                                         "operationId":  "SendEmailV2"
+                                                                                                                                                                                                                     },
+                                                                                                                                                                                                            "parameters":  {
+                                                                                                                                                                                                                               "emailMessage/To":  "@{variables(\u0027varEmployeeEmail\u0027)}",
+                                                                                                                                                                                                                               "emailMessage/Subject":  "Ferias Aprovadas - @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}",
+                                                                                                                                                                                                                               "emailMessage/Body":  "\u003ch2\u003eSuas ferias foram APROVADAS!\u003c/h2\u003e\u003cp\u003e\u003cb\u003ePeriodo:\u003c/b\u003e @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}\u003c/p\u003e\u003cp\u003e\u003cb\u003eTotal:\u003c/b\u003e @{triggerOutputs()?[\u0027body/DiasUteis\u0027]} dias\u003c/p\u003e\u003cp\u003e\u003cb\u003eAprovado por:\u003c/b\u003e @{variables(\u0027varApproverEmail\u0027)}\u003c/p\u003e"
+                                                                                                                                                                                                                           },
+                                                                                                                                                                                                            "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                        }
+                                                                                                                                                                                         }
+                                                                                                                                                  },
+                                                                                                                                      "runAfter":  {
+                                                                                                                                                       "PostApprovalCard":  [
+                                                                                                                                                                                "Succeeded"
+                                                                                                                                                                            ]
+                                                                                                                                                   },
+                                                                                                                                      "else":  {
+                                                                                                                                                   "actions":  {
+                                                                                                                                                                   "Update_Status_REJECTED":  {
+                                                                                                                                                                                                  "type":  "OpenApiConnection",
+                                                                                                                                                                                                  "inputs":  {
+                                                                                                                                                                                                                 "host":  {
+                                                                                                                                                                                                                              "apiId":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                                                                                                                                                              "connectionName":  "shared_sharepointonline",
+                                                                                                                                                                                                                              "operationId":  "PatchItem"
+                                                                                                                                                                                                                          },
+                                                                                                                                                                                                                 "parameters":  {
+                                                                                                                                                                                                                                    "dataset":  "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                                                                                                                                                                                                                                    "table":  "8a605bcd-d27c-449c-8722-d51094184ade",
+                                                                                                                                                                                                                                    "id":  "@variables(\u0027varRequestId\u0027)",
+                                                                                                                                                                                                                                    "item/Title":  "@{triggerOutputs()?[\u0027body/Title\u0027]}@{utcNow()}",
+                                                                                                                                                                                                                                    "item/Status":  "REJECTED"
+                                                                                                                                                                                                                                },
+                                                                                                                                                                                                                 "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                             }
+                                                                                                                                                                                              },
+                                                                                                                                                                   "Notify_Employee_Teams_Rejected":  {
+                                                                                                                                                                                                          "runAfter":  {
+                                                                                                                                                                                                                           "Update_Status_REJECTED":  [
+                                                                                                                                                                                                                                                          "Succeeded"
+                                                                                                                                                                                                                                                      ]
+                                                                                                                                                                                                                       },
+                                                                                                                                                                                                          "type":  "OpenApiConnection",
+                                                                                                                                                                                                          "inputs":  {
+                                                                                                                                                                                                                         "host":  {
+                                                                                                                                                                                                                                      "apiId":  "/providers/Microsoft.PowerApps/apis/shared_teams",
+                                                                                                                                                                                                                                      "connectionName":  "shared_teams",
+                                                                                                                                                                                                                                      "operationId":  "PostMessageToConversation"
+                                                                                                                                                                                                                                  },
+                                                                                                                                                                                                                         "parameters":  {
+                                                                                                                                                                                                                                            "poster":  "Flow bot",
+                                                                                                                                                                                                                                            "location":  "Chat with Flow bot",
+                                                                                                                                                                                                                                            "body/recipient":  "@{variables(\u0027varEmployeeEmail\u0027)}",
+                                                                                                                                                                                                                                            "body/messageBody":  "Sua solicitacao de ferias foi REJEITADA.\n\nPeriodo solicitado: @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}\nMotivo: @{body(\u0027PostApprovalCard\u0027)?[\u0027data\u0027]?[\u0027comments\u0027]}\n\nEntre em contato com seu gestor para mais informacoes."
+                                                                                                                                                                                                                                        },
+                                                                                                                                                                                                                         "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                                     }
+                                                                                                                                                                                                      },
+                                                                                                                                                                   "Notify_Employee_Email_Rejected":  {
+                                                                                                                                                                                                          "runAfter":  {
+                                                                                                                                                                                                                           "Notify_Employee_Teams_Rejected":  [
+                                                                                                                                                                                                                                                                  "Succeeded",
+                                                                                                                                                                                                                                                                  "Failed",
+                                                                                                                                                                                                                                                                  "Skipped"
+                                                                                                                                                                                                                                                              ]
+                                                                                                                                                                                                                       },
+                                                                                                                                                                                                          "type":  "OpenApiConnection",
+                                                                                                                                                                                                          "inputs":  {
+                                                                                                                                                                                                                         "host":  {
+                                                                                                                                                                                                                                      "apiId":  "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                                                                                                                                                                                                                      "connectionName":  "shared_office365",
+                                                                                                                                                                                                                                      "operationId":  "SendEmailV2"
+                                                                                                                                                                                                                                  },
+                                                                                                                                                                                                                         "parameters":  {
+                                                                                                                                                                                                                                            "emailMessage/To":  "@{variables(\u0027varEmployeeEmail\u0027)}",
+                                                                                                                                                                                                                                            "emailMessage/Subject":  "Ferias Rejeitadas - @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}",
+                                                                                                                                                                                                                                            "emailMessage/Body":  "\u003ch2\u003eSua solicitacao de ferias foi REJEITADA.\u003c/h2\u003e\u003cp\u003e\u003cb\u003ePeriodo solicitado:\u003c/b\u003e @{formatDateTime(triggerOutputs()?[\u0027body/DataInicio\u0027], \u0027dd/MM/yyyy\u0027)} a @{formatDateTime(triggerOutputs()?[\u0027body/DataFim\u0027], \u0027dd/MM/yyyy\u0027)}\u003c/p\u003e\u003cp\u003e\u003cb\u003eMotivo:\u003c/b\u003e @{body(\u0027PostApprovalCard\u0027)?[\u0027data\u0027]?[\u0027comments\u0027]}\u003c/p\u003e\u003cp\u003eEntre em contato com seu gestor para mais informacoes.\u003c/p\u003e"
+                                                                                                                                                                                                                                        },
+                                                                                                                                                                                                                         "authentication":  "@parameters(\u0027$authentication\u0027)"
+                                                                                                                                                                                                                     }
+                                                                                                                                                                                                      }
+                                                                                                                                                               }
+                                                                                                                                               },
+                                                                                                                                      "expression":  {
+                                                                                                                                                         "and":  [
+                                                                                                                                                                     {
+                                                                                                                                                                         "equals":  [
+                                                                                                                                                                                        "@body(\u0027PostApprovalCard\u0027)?[\u0027data\u0027]?[\u0027action\u0027]",
+                                                                                                                                                                                        "approve"
+                                                                                                                                                                                    ]
+                                                                                                                                                                     }
+                                                                                                                                                                 ]
+                                                                                                                                                     },
+                                                                                                                                      "type":  "If"
+                                                                                                                                  }
+                                                                                                       },
+                                                                                           "runAfter":  {
+                                                                                                            "GetEmployeeDetails":  [
+                                                                                                                                       "Succeeded"
+                                                                                                                                   ]
+                                                                                                        },
+                                                                                           "else":  {
+                                                                                                        "actions":  {
+                                                                                                                        "Terminate_Not_Pending":  {
+                                                                                                                                                      "type":  "Terminate",
+                                                                                                                                                      "inputs":  {
+                                                                                                                                                                     "runStatus":  "Succeeded"
+                                                                                                                                                                 }
+                                                                                                                                                  }
+                                                                                                                    }
+                                                                                                    },
+                                                                                           "expression":  {
+                                                                                                              "and":  [
+                                                                                                                          {
+                                                                                                                              "equals":  [
+                                                                                                                                             "@triggerOutputs()?[\u0027body/Status\u0027]",
+                                                                                                                                             "PENDING"
+                                                                                                                                         ]
+                                                                                                                          }
+                                                                                                                      ]
+                                                                                                          },
+                                                                                           "type":  "If"
+                                                                                       }
+                                                      },
+                                          "outputs":  {
+
+                                                      }
+                                      },
+                       "connectionReferences":  {
+                                                    "shared_sharepointonline":  {
+                                                                                    "connectionName":  "44f187cde7f54f208cf22bac4e533816",
+                                                                                    "source":  "Embedded",
+                                                                                    "id":  "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                                                                    "tier":  "NotSpecified",
+                                                                                    "apiName":  "sharepointonline",
+                                                                                    "isProcessSimpleApiReferenceConversionAlreadyDone":  false
+                                                                                },
+                                                    "shared_teams":  {
+                                                                         "connectionName":  "shared-teams-1440d346-f1dd-44ea-912f-3787038ac333",
+                                                                         "source":  "Embedded",
+                                                                         "id":  "/providers/Microsoft.PowerApps/apis/shared_teams",
+                                                                         "tier":  "NotSpecified",
+                                                                         "apiName":  "teams",
+                                                                         "isProcessSimpleApiReferenceConversionAlreadyDone":  false
+                                                                     },
+                                                    "shared_office365":  {
+                                                                             "connectionName":  "306d783533364cb6948ab2830fc3b188",
+                                                                             "source":  "Embedded",
+                                                                             "id":  "/providers/Microsoft.PowerApps/apis/shared_office365",
+                                                                             "tier":  "NotSpecified",
+                                                                             "apiName":  "office365",
+                                                                             "isProcessSimpleApiReferenceConversionAlreadyDone":  false
+                                                                         }
+                                                },
+                       "flowFailureAlertSubscribed":  false,
+                       "isManaged":  false
+                   }
+}

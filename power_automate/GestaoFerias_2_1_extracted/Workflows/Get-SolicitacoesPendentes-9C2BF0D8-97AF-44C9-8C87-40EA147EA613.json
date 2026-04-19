@@ -1,0 +1,136 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_2b2bc"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "aprovadorEmail": {
+                  "type": "string",
+                  "description": "Email do aprovador/gestor"
+                }
+              },
+              "required": [
+                "aprovadorEmail"
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "get-solicitacoes-pendentes-trigger"
+          }
+        }
+      },
+      "actions": {
+        "Sanitizar_Aprovador_Email": {
+          "type": "Compose",
+          "inputs": "@replace(trim(toLower(triggerBody()?['aprovadorEmail'])),'''','''''')",
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "get-solicitacoes-pendentes-sanitize-email"
+          }
+        },
+        "Obter_itens_pendentes": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias",
+              "$filter": "AprovadorEmail eq '@{outputs('Sanitizar_Aprovador_Email')}' and Status eq 'Pendente'",
+              "$orderby": "Created desc"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Sanitizar_Aprovador_Email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-solicitacoes-pendentes-getitems"
+          }
+        },
+        "Resposta_Erro": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "ERRO_CONSULTA_PENDENTES",
+              "message": "Falha ao consultar solicitações pendentes."
+            }
+          },
+          "runAfter": {
+            "Obter_itens_pendentes": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-solicitacoes-pendentes-response-error"
+          }
+        },
+        "Resposta": {
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": true,
+              "count": "@{length(body('Obter_itens_pendentes')?['value'])}",
+              "data": "@{body('Obter_itens_pendentes')?['value']}"
+            }
+          },
+          "runAfter": {
+            "Obter_itens_pendentes": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "get-solicitacoes-pendentes-response"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

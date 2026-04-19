@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_2b2bc"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "schedule": {
+              "hours": [
+                "9"
+              ],
+              "minutes": [
+                0
+              ]
+            },
+            "timeZone": "E. South America Standard Time"
+          },
+          "metadata": {
+            "operationMetadataId": "escalar-recurrence-trigger"
+          }
+        }
+      },
+      "actions": {
+        "Obter_Pendentes_48h": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias",
+              "$filter": "Status eq 'Pendente' and Created lt '@{addDays(utcNow(), -2)}'"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "escalar-get-pendentes"
+          }
+        },
+        "Aplicar_a_cada": {
+          "type": "Foreach",
+          "foreach": "@body('Obter_Pendentes_48h')?['value']",
+          "actions": {
+            "Atualizar_Status_Escalado": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                  "table": "Solicitacoes_Ferias",
+                  "id": "@{items('Aplicar_a_cada')?['ID']}",
+                  "item": {
+                    "Title": "Solicitação Escalada",
+                    "Status": "Escalado",
+                    "DataEscalacao": "@{utcNow()}"
+                  }
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PatchItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "metadata": {
+                "operationMetadataId": "escalar-update-status"
+              }
+            }
+          },
+          "runAfter": {
+            "Obter_Pendentes_48h": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "escalar-foreach"
+          }
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

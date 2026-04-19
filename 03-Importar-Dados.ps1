@@ -77,12 +77,9 @@ foreach ($row in $excelData) {
         $diretorEmail = if ($row.Diretor_Email) { $row.Diretor_Email } elseif ($row.'Diretor Email') { $row.'Diretor Email' } else { "" }
         $ehGestorRaw = if ($row.EhGestor) { $row.EhGestor } elseif ($row.'É Gestor') { $row.'É Gestor' } elseif ($row.IsManager) { $row.IsManager } else { $false }
         
-        if ($ehGestorRaw -eq "Sim" -or $ehGestorRaw -eq "Yes" -or $ehGestorRaw -eq $true -or $ehGestorRaw -eq "Não" -eq $false) {
-            $ehGestor = ($ehGestorRaw -eq "Sim" -or $ehGestorRaw -eq "Yes" -or $ehGestorRaw -eq $true)
-        }
-        else {
-            $ehGestor = $false
-        }
+        # Fixed: removed buggy `$ehGestorRaw -eq "Não" -eq $false` condition (R-003)
+        # PowerShell evaluates left-to-right: ($ehGestorRaw -eq "Não") -eq $false → incorrect results
+        $ehGestor = ($ehGestorRaw -eq "Sim" -or $ehGestorRaw -eq "Yes" -or $ehGestorRaw -eq $true)
         
         $itemValues = @{
             "Title"          = $nome

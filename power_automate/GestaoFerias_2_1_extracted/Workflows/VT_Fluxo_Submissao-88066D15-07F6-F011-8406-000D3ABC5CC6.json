@@ -1,0 +1,200 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "gstf_sharepoint"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedsharepointonline_2b2bc"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_approvals": {
+        "api": {
+          "name": "shared_approvals"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedapprovals_a5d7d"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Quando_um_item_é_criado": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Solicitacoes_Ferias"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnNewItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          },
+          "recurrence": {
+            "interval": 3,
+            "frequency": "Minute"
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "b5fb845e-6026-4c1a-b2aa-87511796bebd"
+          }
+        }
+      },
+      "actions": {
+        "Obter_Politica_Ferias": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "a956d1c0-7618-441e-9713-401b1a82a604",
+              "$filter": "Email eq '"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Buscar_Gestor": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "c32efcc3-65cc-4ba6-b834-f533d4e89ef4"
+          }
+        },
+        "Iniciar_e_aguardar_uma_aprovação": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "parameters": {
+              "approvalType": "Basic",
+              "WebhookApprovalCreationInput/title": "Solicitacao de Ferias",
+              "WebhookApprovalCreationInput/assignedTo": "mbenicios@minsait.com",
+              "WebhookApprovalCreationInput/enableNotifications": true,
+              "WebhookApprovalCreationInput/enableReassignment": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_approvals",
+              "operationId": "StartAndWaitForAnApproval",
+              "connectionName": "shared_approvals"
+            }
+          },
+          "runAfter": {
+            "Obter_Politica_Ferias": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3cd60e88-c44c-45ff-9f72-8f06ea03f901"
+          }
+        },
+        "Condição": {
+          "type": "If",
+          "expression": {
+            "equals": [
+              "@outputs('Iniciar_e_aguardar_uma_aprovação')?['body/outcome']",
+              "Approve"
+            ]
+          },
+          "actions": {
+            "Atualizar_item": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                  "table": "8a605bcd-d27c-449c-8722-d51094184ade",
+                  "id": "@triggerBody()?['ID']",
+                  "item/Title": "@triggerBody()?['Title']",
+                  "item/CriadoPorBot": false,
+                  "item/Tipo": "Ferias"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PatchItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Atualizar_item_1": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                    "table": "8a605bcd-d27c-449c-8722-d51094184ade",
+                    "id": "@triggerBody()?['ID']",
+                    "item/Title": "@coalesce(triggerOutputs()?['body/Title'],'Solicitação de Férias')\r\n",
+                    "item/Status": "Rejeitado",
+                    "item/CriadoPorBot": false,
+                    "item/Tipo": "Ferias"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "PatchItem",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Iniciar_e_aguardar_uma_aprovação": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "abd8c481-798b-46b2-a533-756b565a1be2"
+          }
+        },
+        "Buscar_Gestor": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "7999e98b-a6c5-48da-92c9-13ba23eafff0",
+              "$filter": "Email_Colaborador eq '@{triggerBody()?['EmailSolicitante']}'"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {}
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,763 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "gstf_sharepoint"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "metadata": {
+        "defaultToEmbeddedConnections": true
+      },
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "573b3ac6-b034-4479-b682-4bc574536789"
+          },
+          "type": "Request",
+          "kind": "Skills",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "description": "email",
+                  "title": "Texto",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "dataInicio",
+                  "title": "Texto 1",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_2": {
+                  "description": "Insira sua entrada",
+                  "title": "Texto 2",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "text",
+                "text_1",
+                "text_2"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Sanitizar_Email": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-sanitize-email"
+          },
+          "type": "Compose",
+          "inputs": "@replace(trim(toLower(triggerBody()?['email'])),'''','''''')"
+        },
+        "Condition_Datas_Validas": {
+          "runAfter": {
+            "Normalizar_Data_Fim": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-condition-datas-validas"
+          },
+          "type": "Compose",
+          "inputs": "@if(greaterOrEquals(ticks(outputs('Normalizar_Data_Fim')), ticks(outputs('Normalizar_Data_Inicio'))), 'OK', int('DATA_INVALIDA'))"
+        },
+        "Normalizar_Data_Inicio": {
+          "runAfter": {
+            "Sanitizar_Email": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-normalizar-data-inicio"
+          },
+          "type": "Compose",
+          "inputs": "@if(\r\n  contains(trim(string(triggerBody()?['dataInicio'])),'-'),\r\n  formatDateTime(trim(string(triggerBody()?['dataInicio'])),'yyyy-MM-dd'),\r\n  if(\r\n    equals(length(split(trim(string(triggerBody()?['dataInicio'])),'/')),2),\r\n    concat(\r\n      string(\r\n        if(\r\n          empty(triggerBody()?['anoReferencia']),\r\n          int(formatDateTime(utcNow(),'yyyy')),\r\n          int(triggerBody()?['anoReferencia'])\r\n        )\r\n      ),\r\n      '-',\r\n      formatNumber(int(last(split(trim(string(triggerBody()?['dataInicio'])),'/'))),'00'),\r\n      '-',\r\n      formatNumber(int(first(split(trim(string(triggerBody()?['dataInicio'])),'/'))),'00')\r\n    ),\r\n    concat(\r\n      formatNumber(int(last(split(trim(string(triggerBody()?['dataInicio'])),'/'))),'0000'),\r\n      '-',\r\n      formatNumber(int(first(skip(split(trim(string(triggerBody()?['dataInicio'])),'/'),1))),'00'),\r\n      '-',\r\n      formatNumber(int(first(split(trim(string(triggerBody()?['dataInicio'])),'/'))),'00')\r\n    )\r\n  )\r\n)"
+        },
+        "Normalizar_Data_Fim": {
+          "runAfter": {
+            "Normalizar_Data_Inicio": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-normalizar-data-fim"
+          },
+          "type": "Compose",
+          "inputs": "@if( not(empty(triggerBody()?['diasFerias'])), formatDateTime(addDays(outputs('Normalizar_Data_Inicio'),sub(int(triggerBody()?['diasFerias']),1)),'yyyy-MM-dd'), if( contains(trim(string(triggerBody()?['dataFim'])),'-'), formatDateTime(trim(string(triggerBody()?['dataFim'])),'yyyy-MM-dd'), if( equals(length(split(trim(string(triggerBody()?['dataFim'])),'/')),2), concat( string( if( empty(triggerBody()?['anoReferencia']), int(formatDateTime(utcNow(),'yyyy')), int(triggerBody()?['anoReferencia']) ) ), '-', formatNumber(int(last(split(trim(string(triggerBody()?['dataFim'])),'/'))),'00'), '-', formatNumber(int(first(split(trim(string(triggerBody()?['dataFim'])),'/'))),'00') ), concat( formatNumber(int(last(split(trim(string(triggerBody()?['dataFim'])),'/'))),'0000'), '-', formatNumber(int(first(skip(split(trim(string(triggerBody()?['dataFim'])),'/'),1))),'00'), '-', formatNumber(int(first(split(trim(string(triggerBody()?['dataFim'])),'/'))),'00') ) ) ) )"
+        },
+        "Resposta_Formato_Data_Invalido": {
+          "runAfter": {
+            "Normalizar_Data_Inicio": [
+              "Failed",
+              "TimedOut"
+            ],
+            "Normalizar_Data_Fim": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-response-invalid-date-format"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 400,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "FORMATO_DATA_INVALIDO",
+              "message": "Formato inválido. Use dataInicio em YYYY-MM-DD ou DD/MM. Informe dataFim no mesmo formato, ou informe diasFerias."
+            }
+          }
+        },
+        "Resposta_Data_Invalida": {
+          "runAfter": {
+            "Condition_Datas_Validas": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-response-invalid-date"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 400,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "DATA_INVALIDA",
+              "message": "A data final deve ser maior ou igual à data inicial."
+            }
+          }
+        },
+        "Obter_Colaborador": {
+          "runAfter": {
+            "Condition_Datas_Validas": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-get-colaborador"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_sharepointonline-1",
+              "operationId": "GetItems",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+            },
+            "parameters": {
+              "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+              "table": "Usuarios_Aprovadores",
+              "$filter": "Email eq '@{outputs('Sanitizar_Email')}'"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Resposta_Erro_Obter_Colaborador": {
+          "runAfter": {
+            "Obter_Colaborador": [
+              "Failed",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-response-get-colaborador-failed"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": false,
+              "error": "ERRO_OBTER_COLABORADOR",
+              "message": "Falha ao consultar dados do colaborador."
+            }
+          }
+        },
+        "Condition_Colaborador_Existe": {
+          "actions": {
+            "Obter_Saldo": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "criar-solicitacao-get-saldo"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_sharepointonline-1",
+                  "operationId": "GetItems",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                },
+                "parameters": {
+                  "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                  "table": "SALDO_ATUAL",
+                  "$filter": "ColaboradorEmail eq '@{outputs('Sanitizar_Email')}'"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Resposta_Erro_Obter_Saldo": {
+              "runAfter": {
+                "Obter_Saldo": [
+                  "Failed",
+                  "TimedOut"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "criar-solicitacao-response-get-saldo-failed"
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 500,
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "success": false,
+                  "error": "ERRO_OBTER_SALDO",
+                  "message": "Falha ao consultar saldo do colaborador."
+                }
+              }
+            },
+            "Condition_Saldo_Existe": {
+              "actions": {
+                "Calcular_Dias_Uteis": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-calc-dias"
+                  },
+                  "type": "Compose",
+                  "inputs": "@if(not(empty(triggerBody()?['diasFerias'])), int(triggerBody()?['diasFerias']), max(0, add(add(div(sub(ticks(outputs('Normalizar_Data_Fim')), ticks(outputs('Normalizar_Data_Inicio'))), 864000000000), 1), mul(-1, add(div(sub(ticks(outputs('Normalizar_Data_Fim')), ticks(outputs('Normalizar_Data_Inicio'))), 6048000000000), if(greaterOrEquals(mod(dayOfWeek(outputs('Normalizar_Data_Inicio')), 7), mod(dayOfWeek(outputs('Normalizar_Data_Fim')), 7)), 2, 0))))))"
+                },
+                "Calcular_Dias_Venda": {
+                  "runAfter": {
+                    "Calcular_Dias_Uteis": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-calc-venda"
+                  },
+                  "type": "Compose",
+                  "inputs": "@if(empty(triggerBody()?['diasVenda']), 0, int(triggerBody()?['diasVenda']))"
+                },
+                "Calcular_Dias_Comprometidos": {
+                  "runAfter": {
+                    "Calcular_Dias_Venda": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-calc-comprometidos"
+                  },
+                  "type": "Compose",
+                  "inputs": "@add(outputs('Calcular_Dias_Uteis'), outputs('Calcular_Dias_Venda'))"
+                },
+                "Resposta_Erro_Calcular_Dias": {
+                  "runAfter": {
+                    "Calcular_Dias_Uteis": [
+                      "Failed",
+                      "TimedOut"
+                    ],
+                    "Calcular_Dias_Venda": [
+                      "Failed",
+                      "TimedOut"
+                    ],
+                    "Calcular_Dias_Comprometidos": [
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-response-calc-dias-failed"
+                  },
+                  "type": "Response",
+                  "kind": "Http",
+                  "inputs": {
+                    "statusCode": 400,
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "success": false,
+                      "error": "ERRO_CALCULO_DIAS",
+                      "message": "Não foi possível calcular os dias. Verifique datas e campos numéricos (diasFerias/diasVenda)."
+                    }
+                  }
+                },
+                "Obter_Solicitacoes_Conflitantes": {
+                  "runAfter": {
+                    "Calcular_Dias_Comprometidos": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-get-conflitos"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_sharepointonline-1",
+                      "operationId": "GetItems",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                    },
+                    "parameters": {
+                      "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                      "table": "Solicitacoes_Ferias",
+                      "$filter": "ColaboradorEmail eq '@{outputs('Sanitizar_Email')}' and (Status eq 'Pendente' or Status eq 'Aprovado') and DataInicio le '@{outputs('Normalizar_Data_Fim')}' and DataFim ge '@{outputs('Normalizar_Data_Inicio')}'"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "Resposta_Erro_Obter_Conflitos": {
+                  "runAfter": {
+                    "Obter_Solicitacoes_Conflitantes": [
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-response-conflitos-failed"
+                  },
+                  "type": "Response",
+                  "kind": "Http",
+                  "inputs": {
+                    "statusCode": 500,
+                    "headers": {
+                      "Content-Type": "application/json"
+                    },
+                    "body": {
+                      "success": false,
+                      "error": "ERRO_VALIDACAO_CONFLITO",
+                      "message": "Falha ao validar conflito de datas."
+                    }
+                  }
+                },
+                "Condition_Saldo_Suficiente": {
+                  "actions": {
+                    "Criar_Solicitacao": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-post"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connectionName": "shared_sharepointonline-1",
+                          "operationId": "PostItem",
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                        },
+                        "parameters": {
+                          "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                          "table": "Solicitacoes_Ferias",
+                          "item/Title": "Solicitacao de Ferias\n"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Resposta_Erro_Criar_Solicitacao": {
+                      "runAfter": {
+                        "Criar_Solicitacao": [
+                          "Failed",
+                          "TimedOut"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-response-create-failed"
+                      },
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                        "statusCode": 500,
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "success": false,
+                          "error": "ERRO_CRIAR_SOLICITACAO",
+                          "message": "Falha ao criar solicitação de férias."
+                        }
+                      }
+                    },
+                    "Obter_Saldo_Atual": {
+                      "runAfter": {
+                        "Criar_Solicitacao": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-get-saldo-atual"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connectionName": "shared_sharepointonline-1",
+                          "operationId": "GetItem",
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                        },
+                        "parameters": {
+                          "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                          "table": "SALDO_ATUAL",
+                          "id": "@{first(body('Obter_Saldo')?['value'])?['ID']}"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Resposta_Erro_Obter_Saldo_Atual": {
+                      "runAfter": {
+                        "Obter_Saldo_Atual": [
+                          "Failed",
+                          "TimedOut"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-response-get-saldo-atual-failed"
+                      },
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                        "statusCode": 500,
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "success": false,
+                          "error": "ERRO_SALDO_ATUAL",
+                          "message": "Falha ao revalidar saldo antes da atualização."
+                        }
+                      }
+                    },
+                    "Atualizar_Saldo": {
+                      "runAfter": {
+                        "Obter_Saldo_Atual": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-update-saldo"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connectionName": "shared_sharepointonline-1",
+                          "operationId": "PatchItem",
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                        },
+                        "parameters": {
+                          "dataset": "https://indra365.sharepoint.com/sites/Grp_T_DN_Arquitetura_Solucoes_Multi_Praticas_QA",
+                          "table": "SALDO_ATUAL",
+                          "id": "@{body('Obter_Saldo_Atual')?['ID']}"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    },
+                    "Resposta_Sucesso": {
+                      "runAfter": {
+                        "Atualizar_Saldo": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-response-success"
+                      },
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                        "statusCode": 200,
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "success": true,
+                          "solicitacaoId": "@{body('Criar_Solicitacao')?['ID']}",
+                          "status": "Pendente",
+                          "diasSolicitados": "@{outputs('Calcular_Dias_Uteis')}",
+                          "diasVenda": "@{outputs('Calcular_Dias_Venda')}",
+                          "diasComprometidos": "@{outputs('Calcular_Dias_Comprometidos')}",
+                          "dataInicio": "@{outputs('Normalizar_Data_Inicio')}",
+                          "dataFim": "@{outputs('Normalizar_Data_Fim')}",
+                          "aprovador": "@{first(body('Obter_Colaborador')?['value'])?['AprovadorNome']}",
+                          "message": "Solicitação criada com sucesso e enviada para aprovação."
+                        }
+                      }
+                    },
+                    "Resposta_Erro_Atualizar_Saldo": {
+                      "runAfter": {
+                        "Atualizar_Saldo": [
+                          "Failed",
+                          "TimedOut"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "criar-solicitacao-response-update-saldo-failed"
+                      },
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                        "statusCode": 500,
+                        "headers": {
+                          "Content-Type": "application/json"
+                        },
+                        "body": {
+                          "success": false,
+                          "error": "ERRO_ATUALIZAR_SALDO",
+                          "message": "Solicitação criada, mas houve falha ao atualizar saldo."
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Obter_Solicitacoes_Conflitantes": [
+                      "Succeeded"
+                    ]
+                  },
+                  "else": {
+                    "actions": {
+                      "Resposta_Saldo_Insuficiente": {
+                        "runAfter": {},
+                        "metadata": {
+                          "operationMetadataId": "criar-solicitacao-response-error"
+                        },
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                          "statusCode": 400,
+                          "headers": {
+                            "Content-Type": "application/json"
+                          },
+                          "body": {
+                            "success": false,
+                            "error": "VALIDACAO_NEGADA",
+                            "message": "Não foi possível criar a solicitação. Verifique saldo, conflito de datas e regras de férias (diasVenda entre 0 e 10; total diasSolicitados + diasVenda <= 30)."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "greater": [
+                          "@outputs('Calcular_Dias_Uteis')",
+                          0
+                        ]
+                      },
+                      {
+                        "or": [
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              ""
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "5"
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "10"
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "15"
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "20"
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "25"
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "@string(triggerBody()?['diasFerias'])",
+                              "30"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "greaterOrEquals": [
+                          "@first(body('Obter_Saldo')?['value'])?['SaldoDisponivel']",
+                          "@outputs('Calcular_Dias_Comprometidos')"
+                        ]
+                      },
+                      {
+                        "equals": [
+                          "@length(body('Obter_Solicitacoes_Conflitantes')?['value'])",
+                          0
+                        ]
+                      },
+                      {
+                        "greaterOrEquals": [
+                          "@outputs('Calcular_Dias_Venda')",
+                          0
+                        ]
+                      },
+                      {
+                        "lessOrEquals": [
+                          "@outputs('Calcular_Dias_Venda')",
+                          10
+                        ]
+                      },
+                      {
+                        "lessOrEquals": [
+                          "@outputs('Calcular_Dias_Comprometidos')",
+                          30
+                        ]
+                      }
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "criar-solicitacao-condition"
+                  },
+                  "type": "If"
+                }
+              },
+              "runAfter": {
+                "Obter_Saldo": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Resposta_Saldo_Nao_Encontrado": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "criar-solicitacao-response-no-saldo"
+                    },
+                    "type": "Response",
+                    "kind": "Http",
+                    "inputs": {
+                      "statusCode": 404,
+                      "headers": {
+                        "Content-Type": "application/json"
+                      },
+                      "body": {
+                        "success": false,
+                        "error": "SALDO_NAO_ENCONTRADO",
+                        "message": "Registro de saldo não encontrado para o email informado. Contacte o RH."
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Obter_Saldo')?['value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "criar-solicitacao-condition-saldo-existe"
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Obter_Colaborador": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Resposta_Colaborador_Nao_Encontrado": {
+                "runAfter": {},
+                "metadata": {
+                  "operationMetadataId": "criar-solicitacao-response-no-colab"
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                  "statusCode": 404,
+                  "headers": {
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "success": false,
+                    "error": "COLABORADOR_NAO_ENCONTRADO",
+                    "message": "Colaborador não encontrado na lista de usuários aprovadores. Verifique se o email está cadastrado."
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  "@length(body('Obter_Colaborador')?['value'])",
+                  0
+                ]
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "criar-solicitacao-condition-colab-existe"
+          },
+          "type": "If"
+        }
+      },
+      "outputs": {}
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}
