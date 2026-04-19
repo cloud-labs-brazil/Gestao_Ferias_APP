@@ -1,0 +1,32 @@
+{
+  "QualifiedValues": [
+    {
+      "Namespace": "SolicitaçãoDeFérias (Formulários)",
+      "Kind": "default.cds_crbdf_solicitacaodeferias_forms",
+      "Values": {
+        "Información": "62014d24-34e2-44ff-9b73-ea8eb2572230"
+      }
+    },
+    {
+      "Namespace": "Funcionario (Formulários)",
+      "Kind": "default.cds_crbdf_funcionario_forms",
+      "Values": {
+        "Información": "dd5d603b-b025-4156-93c3-d6896c916d1b"
+      }
+    },
+    {
+      "Namespace": "SolicitaçãoDeFérias (Forms)",
+      "Kind": "default.cds_crbdf_solicitacaodeferias_forms",
+      "Values": {
+        "Información": "62014d24-34e2-44ff-9b73-ea8eb2572230"
+      }
+    },
+    {
+      "Namespace": "Funcionario (Forms)",
+      "Kind": "default.cds_crbdf_funcionario_forms",
+      "Values": {
+        "Información": "dd5d603b-b025-4156-93c3-d6896c916d1b"
+      }
+    }
+  ]
+}

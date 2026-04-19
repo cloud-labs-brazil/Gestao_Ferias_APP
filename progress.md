@@ -1,7 +1,7 @@
 # 📈 PROGRESS.MD - Execution Log
 > **Project:** Gestão Férias (Vacation Management)  
 > **Architecture:** Power Apps + Power Automate (2 flows) + SharePoint  
-> **Updated:** 2026-04-18T20:24:00-03:00
+> **Updated:** 2026-04-19T16:35:00-03:00
 
 ---
 
@@ -9,12 +9,14 @@
 
 | Metric | Value |
 |--------|-------|
-| **Progress** | 40% |
+| **Progress** | 33% |
 | **SharePoint Lists** | 6/6 ✅ |
 | **Data Imported** | 32 records ✅ |
-| **Saldo Férias Seeded** | ✅ |
-| **Power Automate Flows** | 1/2 🟡 (VacationApproval in progress) |
-| **Power Apps** | 0/5 screens ⏳ |
+| **Saldo Férias Seeded** | ✅ 13 records |
+| **Power Automate Flows** | 2/2 ✅ E2E verified |
+| ~~HTML Dashboard~~ | ❌ DROPPED (2026-04-19) |
+| **Power Apps** | 🟡 "Aplicativo" exists, needs SP connection |
+| **Teams Integration** | 🟡 Channel created, tabs pending |
 
 ---
 
@@ -38,6 +40,19 @@
 | Apr 18 20:24 | **Cleanup: deleted obsolete flows/ folder** (10 old JSON files) | ✅ |
 | Apr 18 20:24 | **Cleanup: deleted 7 obsolete scripts** | ✅ |
 | Apr 18 20:24 | **Cleanup: deleted Guia_Deploy_Flows.md** (old 10-flow guide) | ✅ |
+| Apr 18 21:05 | **Phase 2: VacationApproval — Flow verified in PA designer** | ✅ |
+| Apr 18 21:17 | E2E test: Anderson (agoncalvest) — approval card received, approved | ✅ |
+| Apr 18 21:27 | Title bug found + fixed (3-layer protection applied) | ✅ |
+| Apr 18 21:30 | E2E test: Hercilio (htorresg) — full clean run | ✅ |
+| Apr 18 21:32 | **Phase 2 COMPLETE** — cleanup, only ID=12 remains | ✅ |
+| Apr 18 22:51 | **Phase 3 COMPLETE: ScheduledAlerts** — E2E verified | ✅ |
+| Apr 19 01:37 | Data integrity fix — Phase 3 status corrected in STATE.md | ✅ |
+| Apr 19 02:10 | Solution audit — legacy flows identified, course corrected | ✅ |
+| Apr 19 05:42 | **Phase 4A: Dashboard built** — 6 files (HTML/CSS/JS), dark-mode SPA | ✅ |
+| Apr 19 06:00 | SP connector created (`sp-connector.js`) — auto-detect SP env | ✅ |
+| Apr 19 06:15 | Deploy script created (`11-Deploy-Dashboard-SP.ps1`) — PnP upload | ✅ |
+| Apr 19 06:27 | **All project docs updated** — CHECKPOINT, STATE, task, progress, gemini | ✅ |
+| Apr 19 16:35 | **Dashboard (4A/4B) DROPPED** — Power Apps is sole frontend | ✅ |
 
 ---
 
@@ -49,27 +64,40 @@
 |------|---------|
 | Colaboradores_Aprovadores | 13 |
 | Feriados | 19 |
-| Solicitacoes_Ferias | 0 (ready) |
+| Solicitacoes_Ferias | 1 (ID=12, APPROVED) |
 | Historico_Ferias | 0 (ready) |
-| Saldo_Ferias | seeded ✅ |
+| Saldo_Ferias | 13 (30 days each) |
 | Alertas_Ferias | 0 (ready) |
 
 ### Power Automate Flows (New Architecture — 2 flows)
 
 | # | Flow | Purpose | Status |
 |---|------|---------|--------|
-| 1 | GestaoFerias_VacationApproval | Approval + notifications | 🟡 In progress (created in PA) |
-| 2 | GestaoFerias_ScheduledAlerts | Weekly alerts | ⏳ Not started |
+| 1 | GestaoFerias_VacationApproval | Approval + notifications | ✅ E2E verified |
+| 2 | GestaoFerias_ScheduledAlerts | Weekly alerts | ✅ E2E verified |
 
-### Power Apps (5 screens — all pending)
+### ~~HTML Dashboard~~ ❌ DROPPED (2026-04-19)
+
+> Dashboard dropped per user decision. Power Apps "Aplicativo" is the sole frontend.
+> Files remain in `GestaoFerias-Dashboard/` for reference only.
+
+### Power Apps (5 screens — Canvas App exists)
 
 | Screen | Purpose | Status |
 |--------|---------|--------|
+| "Aplicativo" | Existing Canvas App (user is full owner) | 🟡 Needs SP connection |
 | Home | Role-based dashboard | ⏳ |
 | New Request | Submit vacation request | ⏳ |
 | My Requests | View request status | ⏳ |
 | Approvals | Manager approve/reject | ⏳ |
 | Team Calendar | Team vacation view | ⏳ |
+
+### Teams Integration
+
+| Item | Status |
+|------|--------|
+| Channel `Vacation_Tracker` | ✅ Created |
+| Power Apps Tab | ⏳ Pending (after Canvas App ready) |
 
 ---
 
@@ -93,9 +121,8 @@ Removed obsolete artifacts from the old 10-flow architecture:
 
 ## 📌 Next Steps
 
-1. Complete `GestaoFerias_VacationApproval` flow in Power Automate
-2. Build `GestaoFerias_ScheduledAlerts` flow
-3. Build Power Apps Canvas App (5 screens)
-4. Embed in Teams
+1. **Phase 4:** Connect "Aplicativo" Canvas App to 6 SP lists + build Home screen
+2. Build remaining Power Apps screens (Phases 5-8)
+3. Teams integration + acceptance (Phase 9)
 
 > All timestamps in BRT (UTC-3)

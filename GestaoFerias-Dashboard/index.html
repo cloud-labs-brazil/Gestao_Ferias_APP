@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gestão Férias — Painel gerencial de férias para colaboradores e gestores Minsait/Indra">
+  <title>Gestão Férias — Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏖️</text></svg>">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ═══ Sidebar ═══════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🏖️</div>
+        <div>
+          <div class="brand-text">Gestão Férias</div>
+          <div class="brand-sub">MINSAIT / INDRA</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">MENU PRINCIPAL</div>
+
+        <a class="nav-item active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-view="requests">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Solicitações</span>
+          <span class="nav-badge" id="pending-badge">0</span>
+        </a>
+
+        <a class="nav-item" data-view="balances">
+          <span class="nav-icon">💰</span>
+          <span class="nav-label">Saldos</span>
+        </a>
+
+        <a class="nav-item" data-view="calendar">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Calendário</span>
+        </a>
+
+        <a class="nav-item" data-view="holidays">
+          <span class="nav-icon">🎌</span>
+          <span class="nav-label">Feriados</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">MB</div>
+          <div class="user-info">
+            <div class="user-name">Manoel Benício</div>
+            <div class="user-role">Administrador</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ Mobile sidebar overlay ════════════════════════════ -->
+    <div class="sidebar-overlay" onclick="App.closeSidebar()"></div>
+
+    <!-- ═══ Main Content Area ═════════════════════════════════ -->
+    <main class="main-content">
+
+      <!-- ─── Header ────────────────────────────────────────── -->
+      <header class="header">
+        <div class="header-left">
+          <button class="hamburger" onclick="App.toggleSidebar()" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div>
+            <h1 class="header-title" id="header-title">Dashboard</h1>
+            <p class="header-subtitle" id="header-subtitle">Visão geral de férias</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="header-date" id="header-date"></span>
+          <div class="header-alerts" title="Alertas">
+            🔔 <span class="alert-badge" id="alerts-badge">0</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ─── Content Scroll Area ───────────────────────────── -->
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <section class="view active" id="view-dashboard"></section>
+
+        <!-- REQUESTS -->
+        <section class="view" id="view-requests"></section>
+
+        <!-- BALANCES -->
+        <section class="view" id="view-balances"></section>
+
+        <!-- CALENDAR -->
+        <section class="view" id="view-calendar"></section>
+
+        <!-- HOLIDAYS -->
+        <section class="view" id="view-holidays"></section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ Scripts ══════════════════════════════════════════════ -->
+  <script src="js/data.js"></script>
+  <script src="js/sp-connector.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

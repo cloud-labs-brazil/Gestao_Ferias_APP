@@ -286,6 +286,12 @@ c:\VMs\Projects\Copilot_Studio_Config\
 | 2026-04-13 19:50 | Flow blueprints created | ✅ | VacationApproval + ScheduledAlerts build guides |
 | 2026-04-13 19:50 | Power Apps formula reference created | ✅ | All Power Fx for 5 screens |
 | 2026-04-13 19:50 | Non-designer guide created | ✅ | Modern Controls + Fluent 2 themes |
+| 2026-04-18 20:24 | **Cleanup: obsolete artifacts removed** | ✅ | flows/ folder, 7 scripts, old deploy guide |
+| 2026-04-18 21:32 | **Phase 2: VacationApproval E2E verified** | ✅ | Full approval cycle tested (Title fix applied) |
+| 2026-04-18 22:51 | **Phase 3: ScheduledAlerts E2E verified** | ✅ | Recurrence → filter → create alerts |
+| 2026-04-19 05:42 | **Phase 4A: HTML Dashboard built** | ✅ | 6 files: dark-mode SPA (5 views) |
+| 2026-04-19 06:15 | SP connector + deploy script created | ✅ | sp-connector.js + 11-Deploy-Dashboard-SP.ps1 |
+| 2026-04-19 06:27 | **All project docs updated** | ✅ | CHECKPOINT, STATE, task, progress, gemini |
 
 ---
 

@@ -1,186 +1,220 @@
-# 📋 Checklist de Implementação - Agente "Gestão Férias"
+# 📋 Checklist de Implementação — Gestão Férias
 
-> **Última atualização:** 25/01/2026 04:10
+> **Última atualização:** 19/04/2026 16:51
 > **Responsável:** Equipe Arquitetura de Soluções
+> **Arquitetura:** Power Apps (Canvas) + Power Automate (Standard) + SharePoint Online
+
+---
+
+## ⚠️ Decisões Críticas de Arquitetura
+
+| # | Decisão | Data | Status |
+|---|---------|------|--------|
+| ADR-001 | **Pivot:** Copilot Studio → Power Apps + Power Automate + SharePoint | 13/04/2026 | ✅ Aprovado |
+| ADR-002 | **Licença:** Standard only (sem Premium) → 2 flows + lógica no Power Apps | 13/04/2026 | ✅ Confirmado |
+| ADR-003 | **Backend:** SharePoint é fonte ÚNICA de dados (6 listas). Sem Dataverse. | 19/04/2026 | ✅ Confirmado |
+| ADR-004 | **App:** Criar Canvas App NOVO ("GestaoFerias") — ignorar app existente com Dataverse | 19/04/2026 | ✅ Confirmado |
 
 ---
 
 ## 📊 Resumo de Progresso
 
-| Fase | Total | Concluído | Pendente | % Concluído |
-|------|-------|-----------|----------|-------------|
-| 1. Pré-requisitos | 6 | 4 | 2 | 67% |
-| 2. SharePoint (Listas) | 8 | 0 | 8 | 0% |
-| 3. Power Automate (Flows) | 10 | 0 | 10 | 0% |
-| 4. Copilot Studio (Tópicos) | 14 | 0 | 14 | 0% |
-| 5. Testes | 8 | 0 | 8 | 0% |
-| 6. Go-Live | 4 | 0 | 4 | 0% |
-| **TOTAL** | **50** | **4** | **46** | **8%** |
+| Fase | Total | ✅ | ⏳ | % |
+|------|-------|----|-----|---|
+| 1. Pré-requisitos + SP Deploy | 10 | 10 | 0 | 100% |
+| 2. Power Automate (2 Flows) | 2 | 2 | 0 | 100% |
+| 3. HTML Dashboard (bônus) | 6 | 6 | 0 | 100% |
+| 4. Power Apps — App + Home Screen | 8 | 0 | 8 | 0% |
+| 5. Power Apps — Tela Nova Solicitação | 6 | 0 | 6 | 0% |
+| 6. Power Apps — Tela Minhas Solicitações | 5 | 0 | 5 | 0% |
+| 7. Power Apps — Tela Aprovações (Gestor) | 5 | 0 | 5 | 0% |
+| 8. Power Apps — Calendário do Time | 5 | 0 | 5 | 0% |
+| 9. Deploy Teams + Go-Live | 6 | 0 | 6 | 0% |
+| **TOTAL** | **53** | **18** | **35** | **34%** |
 
 ```
-[████░░░░░░░░░░░░░░░░] 8% Concluído
-```
-
----
-
-## 🔧 FASE 1: Pré-requisitos (4/6 = 67%)
-
-### Ambiente e Ferramentas
-
-| # | Tarefa | Status | Data | Observação |
-|---|--------|--------|------|------------|
-| 1.1 | [x] Instalar módulo `ImportExcel` PowerShell | ✅ Concluído | 25/01 | Instalado via script |
-| 1.2 | [x] Instalar módulo `PnP.PowerShell` | ✅ Concluído | 25/01 | Versão legada (SharePointPnPPowerShellOnline) + versão 2.12/3.x disponíveis |
-| 1.3 | [x] Validar acesso admin ao SharePoint | ✅ Concluído | 25/01 | URL corrigida: `indra365.sharepoint.com` (não indracompany) |
-| 1.4 | [ ] Validar acesso ao Power Automate | ⏳ Pendente | - | Licença Premium necessária para conectores |
-| 1.5 | [x] Validar acesso ao Copilot Studio | ✅ Concluído | 25/01 | Agente "Gestão Férias" confirmado |
-| 1.6 | [ ] Validar estrutura do arquivo Excel | ⏳ Pendente | - | `Users_Approvers.xlsx` existe mas precisa validar colunas |
-
----
-
-## 📂 FASE 2: SharePoint - Listas (0/8 = 0%)
-
-> **⚠️ STATUS:** Scripts prontos para criar as listas. Aguardando execução.
-
-### Scripts Criados
-
-| Script | Função | Status |
-|--------|--------|--------|
-| `01-Setup-Modulos.ps1` | Instalar módulos PowerShell | ✅ Criado |
-| `02-Deploy-Listas.ps1` | Criar 6 listas + colunas | ✅ Criado |
-| `03-Importar-Dados.ps1` | Importar dados do Excel | ✅ Criado |
-
-### Criação das Listas
-
-| # | Tarefa | Status | Data | Observação |
-|---|--------|--------|------|------------|
-| 2.1 | [ ] Criar lista `Colaboradores_Aprovadores` | ⏳ Pendente | - | Script pronto, aguardando execução |
-| 2.2 | [ ] Criar lista `Solicitacoes_Ferias` | ⏳ Pendente | - | Script pronto |
-| 2.3 | [ ] Criar lista `Historico_Ferias` | ⏳ Pendente | - | Script pronto |
-| 2.4 | [ ] Criar lista `Saldo_Ferias` | ⏳ Pendente | - | Script pronto |
-| 2.5 | [ ] Criar lista `Feriados` | ⏳ Pendente | - | Script pronto |
-| 2.6 | [ ] Criar lista `Alertas_Ferias` | ⏳ Pendente | - | Script pronto |
-| 2.7 | [ ] Importar dados do Excel | ⏳ Pendente | - | Script `03-Importar-Dados.ps1` criado |
-| 2.8 | [ ] Criar Views personalizadas | ⏳ Pendente | - | Após listas criadas |
-
-### Comando para Executar
-
-```powershell
-# Abrir Windows PowerShell (não VS Code)
-cd D:\VMs\Projetos\Copilot_Studio_Config\Scripts
-.\02-Deploy-Listas.ps1
-# → Vai abrir browser para login com mbenicios@minsait.com
+[███████░░░░░░░░░░░░░] 34% Concluído
 ```
 
 ---
 
-## ⚡ FASE 3: Power Automate - Flows (0/10 = 0%)
+## ✅ FASE 1: Pré-requisitos + SharePoint Deploy (10/10 = 100%)
 
-### Flows Principais
+> **Status:** COMPLETO — Todos os 6 listas SP criadas, dados importados, saldos semeados.
 
 | # | Tarefa | Status | Data | Observação |
 |---|--------|--------|------|------------|
-| 3.1 | [ ] Flow: `ConsultarSaldoFerias` | ⏳ Pendente | - | Entrada: email → Saída: saldo |
-| 3.2 | [ ] Flow: `VerificarConflitos` | ⏳ Pendente | - | Verifica sobreposição de datas |
-| 3.3 | [ ] Flow: `CriarSolicitacao` | ⏳ Pendente | - | Cria item na lista + notifica gestor |
-| 3.4 | [ ] Flow: `AprovarSolicitacao` | ⏳ Pendente | - | Atualiza status + notifica colaborador |
-| 3.5 | [ ] Flow: `RejeitarSolicitacao` | ⏳ Pendente | - | Atualiza status + motivo |
-| 3.6 | [ ] Flow: `ConsultarStatusSolicitacao` | ⏳ Pendente | - | Retorna status atual |
-| 3.7 | [ ] Flow: `CancelarSolicitacao` | ⏳ Pendente | - | Cancela solicitação pendente |
-| 3.8 | [ ] Flow: `ObterDashboardGestor` | ⏳ Pendente | - | Dados consolidados do time |
-| 3.9 | [ ] Flow: `ObterAlertasCriticos` | ⏳ Pendente | - | Férias vencendo |
-| 3.10 | [ ] Flow: `EnviarNotificacaoTeams` | ⏳ Pendente | - | Adaptive Cards |
+| 1.1 | Instalar módulos PowerShell (PnP + ImportExcel) | ✅ | 25/01 | `01-Setup-Modulos.ps1` |
+| 1.2 | Validar acesso admin ao SharePoint | ✅ | 25/01 | indra365.sharepoint.com |
+| 1.3 | Criar lista `Colaboradores_Aprovadores` | ✅ | 13/04 | `02-Deploy-Listas.ps1` |
+| 1.4 | Criar lista `Solicitacoes_Ferias` | ✅ | 13/04 | Inclui Status choice |
+| 1.5 | Criar lista `Historico_Ferias` | ✅ | 13/04 | — |
+| 1.6 | Criar lista `Saldo_Ferias` | ✅ | 13/04 | — |
+| 1.7 | Criar lista `Feriados` | ✅ | 13/04 | 12 feriados nacionais |
+| 1.8 | Criar lista `Alertas_Ferias` | ✅ | 13/04 | — |
+| 1.9 | Importar dados colaboradores | ✅ | 13/04 | `03-Importar-Dados.ps1` (bug boolean corrigido) |
+| 1.10 | Semear saldos de férias | ✅ | 13/04 | `05-Seed-Saldo-Ferias.ps1` (32 registros) |
 
 ---
 
-## 🤖 FASE 4: Copilot Studio - Tópicos (0/14 = 0%)
+## ✅ FASE 2: Power Automate — 2 Flows Standard (2/2 = 100%)
 
-### Configuração do Agente
-
-| # | Tarefa | Status | Data | Observação |
-|---|--------|--------|------|------------|
-| 4.1 | [ ] Configurar Instruções do Agente | ⏳ Pendente | - | Documento pronto: `Configuracao_Agente_Gestao_Ferias.md` |
-| 4.2 | [ ] Conectar ferramentas (Power Automate) | ⏳ Pendente | - | Depende das listas + flows |
-
-### Tópicos
+> **Status:** COMPLETO — Ambos flows testados E2E com dados reais do SharePoint.
 
 | # | Tarefa | Status | Data | Observação |
 |---|--------|--------|------|------------|
-| 4.3 | [ ] Tópico: Saudação | ⏳ Pendente | - | Texto pronto no documento |
-| 4.4 | [ ] Tópico: Menu/Ajuda | ⏳ Pendente | - | Texto pronto |
-| 4.5 | [ ] Tópico: Consultar Saldo | ⏳ Pendente | - | Texto pronto |
-| 4.6 | [ ] Tópico: Solicitar Férias | ⏳ Pendente | - | Texto pronto com fluxo de conflitos |
-| 4.7 | [ ] Tópico: Status da Solicitação | ⏳ Pendente | - | Texto pronto |
-| 4.8 | [ ] Tópico: Cancelar Solicitação | ⏳ Pendente | - | Texto pronto |
-| 4.9 | [ ] Tópico: Política de Férias | ⏳ Pendente | - | RAG do Knowledge |
-| 4.10 | [ ] Tópico: Feriados/Calendário | ⏳ Pendente | - | Texto pronto |
-| 4.11 | [ ] Tópico: Dashboard Gestor | ⏳ Pendente | - | Texto pronto |
-| 4.12 | [ ] Tópico: Aprovar Solicitações | ⏳ Pendente | - | Texto pronto |
-| 4.13 | [ ] Tópico: Fallback | ⏳ Pendente | - | Autoatendimento (sem RH) |
-| 4.14 | [ ] Configurar Solicitações Sugeridas | ⏳ Pendente | - | 6 chips/botões prontos |
+| 2.1 | Flow `VacationApproval` | ✅ | 18/04 | Trigger: SP item created → Approval → Update status + Notify |
+| 2.2 | Flow `ScheduledAlerts` | ✅ | 18/04 | Recurrence weekly → Filter balances → Create alert records |
+
+**Lógica migrada para Power Apps (não precisa de flow):**
+- Submit Request → `Patch()` direto no SP
+- Cancel Request → `Patch()` status = "CANCELLED"
+- Check Conflicts → `Filter()` por departamento + datas
+- Balance Validation → `LookUp()` no Saldo_Ferias
+- Date Validation → Fórmulas Power Fx (BR-001 a BR-003)
 
 ---
 
-## 🧪 FASE 5: Testes (0/8 = 0%)
+## ✅ FASE 3: HTML Dashboard — Bônus (6/6 = 100%)
+
+> **Status:** COMPLETO — SPA dark-mode com 5 views.
 
 | # | Tarefa | Status | Data | Observação |
 |---|--------|--------|------|------------|
-| 5.1 | [ ] Teste: Consultar saldo | ⏳ Pendente | - | - |
-| 5.2 | [ ] Teste: Solicitar férias (sem conflito) | ⏳ Pendente | - | - |
-| 5.3 | [ ] Teste: Solicitar férias (com conflito) | ⏳ Pendente | - | - |
-| 5.4 | [ ] Teste: Solicitar com < 45 dias | ⏳ Pendente | - | Deve bloquear |
-| 5.5 | [ ] Teste: Aprovar via gestor | ⏳ Pendente | - | - |
-| 5.6 | [ ] Teste: Rejeitar via gestor | ⏳ Pendente | - | - |
-| 5.7 | [ ] Teste: Dashboard gerencial | ⏳ Pendente | - | - |
-| 5.8 | [ ] Teste: Alertas proativos | ⏳ Pendente | - | - |
+| 3.1 | Dashboard HTML SPA | ✅ | 19/04 | `dashboard/index.html` |
+| 3.2 | SP Connector JS | ✅ | 19/04 | `dashboard/sp-connector.js` |
+| 3.3 | Estilos dark-mode | ✅ | 19/04 | CSS completo |
+| 3.4 | 5 views implementadas | ✅ | 19/04 | Home, Requests, Calendar, Alerts, Settings |
+| 3.5 | Deploy script SP | ✅ | 19/04 | `11-Deploy-Dashboard-SP.ps1` |
+| 3.6 | Documentação | ✅ | 19/04 | — |
 
 ---
 
-## 🚀 FASE 6: Go-Live (0/4 = 0%)
+## ⏳ FASE 4: Power Apps — Criar App + Home Screen (0/8 = 0%) ← **ATUAL**
 
-| # | Tarefa | Status | Data | Observação |
-|---|--------|--------|------|------------|
-| 6.1 | [ ] Publicar agente no Teams | ⏳ Pendente | - | - |
-| 6.2 | [ ] Comunicação para usuários | ⏳ Pendente | - | - |
-| 6.3 | [ ] Documentação de suporte | ⏳ Pendente | - | - |
-| 6.4 | [ ] Monitoramento pós-go-live | ⏳ Pendente | - | - |
+> **Status:** DISCUSS completo, PLAN criado. Pronto para EXECUÇÃO.
+> **Método:** Guided browser build em make.powerapps.com
+> **Decisão:** Criar app NOVO (não usar app existente com Dataverse)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 4.1 | Criar Canvas App "GestaoFerias" em make.powerapps.com | ⏳ | Tablet layout, Modern Controls |
+| 4.2 | Habilitar Modern Controls + Fluent 2 theme | ⏳ | Settings → Upcoming features |
+| 4.3 | Conectar 6 listas SharePoint como Data Sources | ⏳ | **SharePoint ONLY — sem Dataverse** |
+| 4.4 | Configurar App.OnStart (user detection + role) | ⏳ | varCurrentUser, varIsManager, varUserBalance |
+| 4.5 | Criar Home Screen — Employee view (saldo + requests) | ⏳ | Balance card + active requests count |
+| 4.6 | Criar Home Screen — Manager view (team stats) | ⏳ | Pending approvals + team on vacation |
+| 4.7 | Criar Navigation shell (bottom tab bar) | ⏳ | 5 tabs, manager-only hidden para employees |
+| 4.8 | Publicar primeira versão (save + publish) | ⏳ | — |
+
+### Referências para Fase 4
+| Artefato | Localização |
+|----------|-------------|
+| Fórmulas App.OnStart | `docs/PowerApps-Formula-Reference.md` §1 |
+| Detecção de role | `docs/PowerApps-Formula-Reference.md` §2 |
+| Fórmulas de saldo | `docs/PowerApps-Formula-Reference.md` §3 |
+| Guia de build (Modern Controls) | `docs/PowerApps-NonDesigner-Guide.md` |
+| Schemas das listas SP | `gemini.md` §3.5 |
+| Plan detalhado | `.planning/phases/04-power-apps-home-screen/04-PLAN.md` |
+| Decisões de contexto | `.planning/phases/04-power-apps-home-screen/04-CONTEXT.md` |
+
+---
+
+## ⏳ FASE 5: Power Apps — Tela Nova Solicitação (0/6 = 0%)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 5.1 | Formulário: Data Início, Data Fim, Observações | ⏳ | Date pickers + text input |
+| 5.2 | Validação BR-001 (45 dias antecedência) | ⏳ | Power Fx client-side |
+| 5.3 | Validação BR-002/BR-003 (5-30 dias) | ⏳ | Power Fx client-side |
+| 5.4 | Verificação de conflitos (Filter SP) | ⏳ | Departamento + datas sobrepostas |
+| 5.5 | Submit via Patch() para Solicitacoes_Ferias | ⏳ | Triggers VacationApproval flow |
+| 5.6 | Confirmação + reset do formulário | ⏳ | — |
+
+---
+
+## ⏳ FASE 6: Power Apps — Tela Minhas Solicitações (0/5 = 0%)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 6.1 | Gallery com solicitações do usuário | ⏳ | Filter por Email_Colaborador |
+| 6.2 | Status badges (Pending/Approved/Rejected/Cancelled) | ⏳ | Color-coded |
+| 6.3 | Detalhes do request (expand) | ⏳ | Todas as colunas visíveis |
+| 6.4 | Botão Cancelar (para status PENDING) | ⏳ | Patch → CANCELLED |
+| 6.5 | Sort + Filter por status/data | ⏳ | — |
+
+---
+
+## ⏳ FASE 7: Power Apps — Tela Aprovações Gestor (0/5 = 0%)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 7.1 | Gallery com solicitações pendentes do time | ⏳ | Filter: Email_Aprovador + Status=PENDING |
+| 7.2 | Botões Aprovar/Rejeitar | ⏳ | Patch → APPROVED/REJECTED |
+| 7.3 | Campo motivo rejeição | ⏳ | Obrigatório se rejeitar |
+| 7.4 | Conflict indicator badge | ⏳ | Tem_Conflito = true → warning |
+| 7.5 | Visível apenas para managers | ⏳ | varIsManager check |
+
+---
+
+## ⏳ FASE 8: Power Apps — Calendário do Time (0/5 = 0%)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 8.1 | Calendar/timeline view do time | ⏳ | Férias aprovadas do departamento |
+| 8.2 | Filtro por período (mês) | ⏳ | — |
+| 8.3 | Indicador de cobertura do time | ⏳ | % de equipe disponível |
+| 8.4 | Detalhes ao clicar | ⏳ | Nome, período, status |
+| 8.5 | Visível apenas para managers | ⏳ | varIsManager check |
+
+---
+
+## ⏳ FASE 9: Deploy Teams + Go-Live (0/6 = 0%)
+
+| # | Tarefa | Status | Observação |
+|---|--------|--------|------------|
+| 9.1 | Publicar Power App como Teams Tab | ⏳ | — |
+| 9.2 | Testar E2E no Teams (employee flow) | ⏳ | Submit → Approve → Balance update |
+| 9.3 | Testar E2E no Teams (manager flow) | ⏳ | View requests → Approve/Reject |
+| 9.4 | Comunicação para usuários | ⏳ | — |
+| 9.5 | Documentação de suporte | ⏳ | — |
+| 9.6 | Monitoramento pós-go-live | ⏳ | — |
 
 ---
 
 ## 📁 Artefatos Produzidos
 
-| Tipo | Arquivo | Status |
-|------|---------|--------|
-| 📄 Documentação | `Configuracao_Agente_Gestao_Ferias.md` | ✅ Completo |
-| 📄 Documentação | `Visao_Gerencial_Gestao_Ferias.md` | ✅ Completo |
-| 📄 Documentação | `Deploy_CLI_SharePoint.md` | ✅ Completo |
-| 📄 Checklist | `Checklist_Implementacao.md` | ✅ Atualizado |
-| 📜 Script | `01-Setup-Modulos.ps1` | ✅ Criado |
-| 📜 Script | `02-Deploy-Listas.ps1` | ✅ Criado |
-| 📜 Script | `03-Importar-Dados.ps1` | ✅ Criado |
+| Tipo | Arquivo | Fase | Status |
+|------|---------|------|--------|
+| 📄 Config | `gemini.md` | — | ✅ Project constitution |
+| 📄 ADR | `docs/ADR-001-Architecture-Pivot.md` | — | ✅ Copilot → Power Apps |
+| 📜 Script | `01-Setup-Modulos.ps1` | 1 | ✅ Module installation |
+| 📜 Script | `02-Deploy-Listas.ps1` | 1 | ✅ 6 lists + columns |
+| 📜 Script | `03-Importar-Dados.ps1` | 1 | ✅ Data import (bool bug fixed) |
+| 📜 Script | `05-Seed-Saldo-Ferias.ps1` | 1 | ✅ Balance seeding |
+| ⚡ Flow | VacationApproval | 2 | ✅ E2E tested |
+| ⚡ Flow | ScheduledAlerts | 2 | ✅ E2E tested |
+| 📄 Formulas | `docs/PowerApps-Formula-Reference.md` | 4-8 | ✅ All Power Fx ready |
+| 📄 Guide | `docs/PowerApps-NonDesigner-Guide.md` | 4-8 | ✅ Modern Controls guide |
+| 🌐 Dashboard | `dashboard/*` (6 files) | 3 | ✅ Dark-mode SPA |
+| 📜 Script | `11-Deploy-Dashboard-SP.ps1` | 3 | ✅ SP deploy script |
+| 📄 Plan | `.planning/phases/04-*/04-PLAN.md` | 4 | ✅ Task plan ready |
+| 📄 Context | `.planning/phases/04-*/04-CONTEXT.md` | 4 | ✅ 6 decisions documented |
 
 ---
 
 ## 📌 Regras de Negócio Confirmadas
 
-| Regra | Valor | Confirmado |
-|-------|-------|------------|
-| Antecedência mínima para solicitar | **45 dias** | ✅ |
-| Mínimo de dias por solicitação | 5 dias | ⏳ Confirmar |
-| Máximo de dias por solicitação | 30 dias | ⏳ Confirmar |
-| Handoff para RH | **NÃO** (autoatendimento) | ✅ |
-| Calendário de feriados | Lista própria da empresa | ✅ |
-| Tenant SharePoint | **indra365.sharepoint.com** | ✅ |
-| Conta SharePoint | **mbenicios@minsait.com** | ✅ |
-
----
-
-## ⚠️ Próximos Passos
-
-1. **IMEDIATO:** Executar `02-Deploy-Listas.ps1` para criar as 6 listas
-2. **IMEDIATO:** Executar `03-Importar-Dados.ps1` para popular colaboradores
-3. Criar os 10 Power Automate Flows
-4. Configurar tópicos no Copilot Studio
+| Regra | Valor | Status |
+|-------|-------|--------|
+| BR-001 | Antecedência mínima: **45 dias** | ✅ Confirmado |
+| BR-002 | Mínimo por solicitação: **5 dias** | ✅ Confirmado |
+| BR-003 | Máximo por solicitação: **30 dias** | ✅ Confirmado |
+| BR-004 | Sem handoff para RH (autoatendimento) | ✅ Confirmado |
+| BR-005 | Detecção de conflito OBRIGATÓRIA | ✅ Confirmado |
+| BR-006 | Notificações via Teams + Email | ✅ Confirmado |
+| BR-007 | Sem períodos de bloqueio (blackout) | ✅ Confirmado |
+| BR-008 | Power Automate Standard only (sem Premium) | ✅ Confirmado |
 
 ---
 
@@ -188,5 +222,13 @@ cd D:\VMs\Projetos\Copilot_Studio_Config\Scripts
 
 | Data | Fase | Ação | Por |
 |------|------|------|-----|
-| 25/01/2026 00:09 | Setup | Documento criado | Claude |
-| 25/01/2026 04:10 | Setup | **Atualizado status real do projeto** | Claude |
+| 25/01/2026 | Setup | Documento criado | Claude |
+| 25/01/2026 | Setup | Status real do projeto atualizado | Claude |
+| 13/04/2026 | 1 | Pivot arquitetura: Copilot → Power Apps + PA + SP | Claude |
+| 13/04/2026 | 1 | 6 listas SP criadas + dados importados + saldos semeados | Claude |
+| 18/04/2026 | 2 | VacationApproval flow E2E testado | Claude |
+| 18/04/2026 | 2 | ScheduledAlerts flow E2E testado | Claude |
+| 19/04/2026 | 3 | HTML Dashboard completo (6 files) | Claude |
+| 19/04/2026 | 4 | **CONTEXTO:** SharePoint = único backend (ADR-003) | Claude |
+| 19/04/2026 | 4 | **CONTEXTO:** App novo clean state (ADR-004) | Claude |
+| 19/04/2026 | 4 | **Checklist reescrito** — refletir estado real pós-pivot | Claude |

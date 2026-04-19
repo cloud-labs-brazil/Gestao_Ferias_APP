@@ -1,15 +1,29 @@
-# Copilot Studio Config - Gestão Férias
-
-## Ignored files
-*.log
-*.tmp
-.DS_Store
-Thumbs.db
-
-# Environment files (keep these private)
+# ── Environment & Secrets ──────────────────
 .env
+.env.*
 *.local
 
-# Large media files (optional)
-# *.webp
-# *.png
+# ── Dependencies ───────────────────────────
+node_modules/
+
+# ── IDE / OS ───────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.tmp/
+.vs/
+.vscode/
+.idea/
+
+# ── Planning & Scratch (AI workspace) ─────
+.planning/
+scratch/
+
+# ── Uploaded media (screenshots, temp) ─────
+uploaded_media_*.png
+uploaded_media_*.webp
+sharepoint_create_lists_*.webp
+
+# ── Package lock (optional, keep if needed)
+# package-lock.json

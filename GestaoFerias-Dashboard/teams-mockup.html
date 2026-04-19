@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão Férias — Power Apps in Teams (Mockup)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================= RESET ========================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; overflow: hidden; background: #1b1b1b; }
+
+    /* ========================= TEAMS SHELL ========================= */
+    .teams-shell {
+      display: flex;
+      height: 100vh;
+      background: #1b1b1b;
+    }
+
+    /* --- Teams Left Rail (Activity, Chat, Teams, etc.) --- */
+    .teams-rail {
+      width: 68px;
+      background: #292929;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+      gap: 4px;
+      border-right: 1px solid #3b3b3b;
+      flex-shrink: 0;
+    }
+    .teams-rail-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+      color: #adadad;
+      font-size: 18px;
+    }
+    .teams-rail-icon:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .teams-rail-icon.active { background: rgba(96,94,229,0.2); color: #7b7bf7; }
+    .teams-rail-icon.active::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: #7b7bf7;
+      border-radius: 0 3px 3px 0;
+    }
+    .teams-rail-icon .badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 16px;
+      height: 16px;
+      background: #c4314b;
+      border-radius: 50%;
+      font-size: 9px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .teams-rail-icon svg { width: 22px; height: 22px; fill: currentColor; }
+    .teams-rail-spacer { flex: 1; }
+    .teams-avatar-small {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6264a7, #7b7bf7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* --- Teams Channel Sidebar --- */
+    .teams-sidebar {
+      width: 280px;
+      background: #292929;
+      border-right: 1px solid #3b3b3b;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .teams-sidebar-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid #3b3b3b;
+    }
+    .teams-sidebar-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .teams-sidebar-search {
+      margin: 8px 16px;
+      padding: 7px 12px;
+      background: #3b3b3b;
+      border: 1px solid #4a4a4a;
+      border-radius: 6px;
+      color: #adadad;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .teams-channel-list {
+      padding: 8px 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .teams-channel {
+      padding: 8px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #adadad;
+      font-size: 13px;
+      transition: background 0.1s;
+    }
+    .teams-channel:hover { background: rgba(255,255,255,0.04); }
+    .teams-channel.active { background: rgba(96,94,229,0.15); color: #fff; }
+    .teams-channel-icon { font-size: 16px; opacity: 0.6; }
+    .teams-team-header {
+      padding: 12px 20px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #7a7a7a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .teams-team-header .team-avatar {
+      width: 24px; height: 24px; border-radius: 4px;
+      background: linear-gradient(135deg, #6264a7, #4a4cc4);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 700;
+    }
+    .teams-team-header .team-name {
+      color: #d4d4d4; font-size: 14px; font-weight: 600; text-transform: none; letter-spacing: 0;
+    }
+
+    /* --- Teams Main Content --- */
+    .teams-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1f1f1f;
+      min-width: 0;
+    }
+
+    /* --- Teams Tab Bar --- */
+    .teams-tabs {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      border-bottom: 1px solid #3b3b3b;
+      background: #292929;
+      height: 44px;
+      flex-shrink: 0;
+      gap: 4px;
+    }
+    .teams-tab {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #adadad;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .teams-tab:hover { color: #fff; }
+    .teams-tab.active {
+      color: #7b7bf7;
+      border-bottom-color: #7b7bf7;
+      font-weight: 600;
+    }
+    .teams-tab-spacer { flex: 1; }
+    .teams-tab-action {
+      color: #adadad;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    .teams-tab-action:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+    /* --- Power App Container --- */
+    .powerapp-container {
+      flex: 1;
+      overflow-y: auto;
+      background: #1a1d2b;
+      position: relative;
+    }
+
+    /* ========================= POWER APP CANVAS ========================= */
+    .pa-canvas {
+      min-height: 100%;
+      padding: 0;
+    }
+
+    /* --- PA Header Bar --- */
+    .pa-header {
+      background: linear-gradient(135deg, #0f1420 0%, #1a1d2b 100%);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(20px);
+    }
+    .pa-header-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      margin-right: 14px; font-size: 18px;
+    }
+    .pa-header-title { font-size: 17px; font-weight: 600; color: #fff; }
+    .pa-header-subtitle { font-size: 12px; color: #8b8fa3; margin-left: 12px; }
+    .pa-header-spacer { flex: 1; }
+    .pa-header-user {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pa-header-user-name { font-size: 13px; color: #c8cad0; }
+    .pa-header-user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 12px; font-weight: 700;
+    }
+
+    /* --- PA Navigation (horizontal, like Fluent 2 Pivot) --- */
+    .pa-nav {
+      display: flex;
+      padding: 0 28px;
+      background: rgba(15,20,32,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 2px;
+    }
+    .pa-nav-item {
+      padding: 12px 20px;
+      font-size: 13px;
+      color: #8b8fa3;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pa-nav-item:hover { color: #c8cad0; background: rgba(255,255,255,0.03); }
+    .pa-nav-item.active {
+      color: #7c83ff;
+      border-bottom-color: #7c83ff;
+      font-weight: 600;
+    }
+    .pa-nav-badge {
+      background: #f5576c;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* --- PA Content Area --- */
+    .pa-content {
+      padding: 24px 28px;
+    }
+    .pa-view { display: none; }
+    .pa-view.active { display: block; animation: paFadeIn 0.3s ease; }
+    @keyframes paFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- PA KPI Row (Fluent 2 Cards) --- */
+    .pa-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .pa-kpi-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .pa-kpi-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .pa-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .pa-kpi-card.blue::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+    .pa-kpi-card.green::before { background: linear-gradient(90deg, #11998e, #38ef7d); }
+    .pa-kpi-card.orange::before { background: linear-gradient(90deg, #f7971e, #ffd200); }
+    .pa-kpi-card.red::before { background: linear-gradient(90deg, #f5576c, #ff355e); }
+    .pa-kpi-card.purple::before { background: linear-gradient(90deg, #a855f7, #6366f1); }
+    .pa-kpi-label { font-size: 12px; color: #8b8fa3; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .pa-kpi-value { font-size: 32px; font-weight: 700; color: #fff; line-height: 1; }
+    .pa-kpi-detail { font-size: 11px; color: #666b7a; margin-top: 6px; }
+    .pa-kpi-icon { position: absolute; top: 16px; right: 16px; font-size: 24px; opacity: 0.3; }
+
+    /* --- PA Section Headers --- */
+    .pa-section {
+      margin-bottom: 24px;
+    }
+    .pa-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .pa-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e0e2e8;
+    }
+    .pa-section-link {
+      font-size: 12px;
+      color: #7c83ff;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .pa-section-link:hover { text-decoration: underline; }
+
+    /* --- PA Data Table (Fluent 2 style) --- */
+    .pa-table-wrap {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .pa-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .pa-table th {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b8fa3;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: left;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .pa-table td {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #c8cad0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .pa-table tr:last-child td { border-bottom: none; }
+    .pa-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    /* --- PA Status Badges (Fluent 2) --- */
+    .pa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pa-badge.pending { background: rgba(247,151,30,0.15); color: #ffd200; }
+    .pa-badge.approved { background: rgba(17,153,142,0.15); color: #38ef7d; }
+    .pa-badge.rejected { background: rgba(245,87,108,0.15); color: #ff6b8a; }
+    .pa-badge.cancelled { background: rgba(139,143,163,0.15); color: #8b8fa3; }
+    .pa-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .pa-badge.pending::before { background: #ffd200; }
+    .pa-badge.approved::before { background: #38ef7d; }
+    .pa-badge.rejected::before { background: #ff6b8a; }
+    .pa-badge.cancelled::before { background: #8b8fa3; }
+
+    /* --- PA Charts (Fluent 2 inspired) --- */
+    .pa-charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .pa-chart-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .pa-chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e0e2e8;
+      margin-bottom: 16px;
+    }
+    .pa-donut-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+    .pa-donut-svg { width: 160px; height: 160px; }
+    .pa-donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pa-donut-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #c8cad0;
+    }
+    .pa-donut-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+    .pa-bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .pa-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pa-bar-label {
+      width: 90px;
+      font-size: 12px;
+      color: #8b8fa3;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .pa-bar-track {
+      flex: 1;
+      height: 24px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .pa-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s ease;
+    }
+    .pa-bar-value {
+      font-size: 12px;
+      color: #c8cad0;
+      font-weight: 600;
+      width: 24px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* --- PA Calendar Grid (Fluent 2) --- */
+    .pa-calendar-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .pa-calendar-month {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .pa-calendar-nav {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #adadad;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .pa-calendar-nav:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .pa-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .pa-cal-weekday {
+      padding: 10px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b8fa3;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pa-cal-day {
+      min-height: 80px;
+      padding: 6px 8px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      border-right: 1px solid rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.01);
+      transition: background 0.15s;
+    }
+    .pa-cal-day:nth-child(7n) { border-right: none; }
+    .pa-cal-day:hover { background: rgba(255,255,255,0.04); }
+    .pa-cal-day.today {
+      background: rgba(124,131,255,0.08);
+    }
+    .pa-cal-day.empty { background: transparent; }
+    .pa-cal-day-num {
+      font-size: 12px;
+      color: #8b8fa3;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .pa-cal-day.today .pa-cal-day-num {
+      color: #7c83ff;
+      font-weight: 700;
+      background: rgba(124,131,255,0.2);
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pa-cal-event {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .pa-cal-event.approved { background: rgba(17,153,142,0.25); color: #38ef7d; }
+    .pa-cal-event.pending { background: rgba(247,151,30,0.25); color: #ffd200; }
+    .pa-cal-event.holiday { background: rgba(245,87,108,0.2); color: #ff6b8a; }
+
+    /* --- PA Action Button (Fluent 2 Primary) --- */
+    .pa-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pa-btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+    .pa-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    }
+    .pa-btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: #c8cad0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .pa-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* --- PA Approval Card (Manager View) --- */
+    .pa-approval-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .pa-approval-card:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.12);
+    }
+    .pa-approval-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .pa-approval-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px; font-weight: 700;
+    }
+    .pa-approval-info h4 { font-size: 14px; color: #e0e2e8; font-weight: 600; }
+    .pa-approval-info p { font-size: 12px; color: #8b8fa3; }
+    .pa-approval-details {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+    }
+    .pa-approval-detail-label { font-size: 10px; color: #666b7a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pa-approval-detail-value { font-size: 13px; color: #c8cad0; font-weight: 500; margin-top: 2px; }
+    .pa-approval-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .pa-btn-approve {
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+      color: #0a1a15;
+      padding: 8px 20px;
+      border-radius: 6px; border: none; font-weight: 600; font-size: 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pa-btn-approve:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(56,239,125,0.3); }
+    .pa-btn-reject {
+      background: rgba(245,87,108,0.1);
+      color: #ff6b8a;
+      padding: 8px 20px;
+      border-radius: 6px; border: 1px solid rgba(245,87,108,0.3); font-weight: 600; font-size: 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pa-btn-reject:hover { background: rgba(245,87,108,0.2); }
+
+    /* --- PA Balance Cards --- */
+    .pa-balance-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .pa-balance-big {
+      font-size: 56px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38ef7d, #11998e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .pa-balance-label {
+      font-size: 14px;
+      color: #8b8fa3;
+      margin-top: 6px;
+    }
+    .pa-balance-sub {
+      font-size: 12px;
+      color: #666b7a;
+      margin-top: 4px;
+    }
+
+    /* --- PA Conflict Warning --- */
+    .pa-conflict-alert {
+      background: rgba(247,151,30,0.1);
+      border: 1px solid rgba(247,151,30,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #ffd200;
+      margin-bottom: 16px;
+    }
+
+    /* --- Watermark --- */
+    .pa-watermark {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: #4a4e5a;
+    }
+    .pa-watermark a { color: #667eea; text-decoration: none; }
+
+    /* --- Responsive --- */
+    @media (max-width: 1200px) {
+      .teams-sidebar { display: none; }
+      .pa-charts-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="teams-shell">
+
+  <!-- ===== TEAMS LEFT RAIL ===== -->
+  <nav class="teams-rail">
+    <div class="teams-rail-icon" title="Activity">
+      <svg viewBox="0 0 24 24"><path d="M14 3v2H2V3h12zm0 4v2H2V7h12zm-4 4v2H2v-2h8zm11.7-2.3l-5 5L14 11l-1.4 1.4 4.3 4.3 6.4-6.4-1.6-1.6z"/></svg>
+      <span class="badge">3</span>
+    </div>
+    <div class="teams-rail-icon" title="Chat">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+    </div>
+    <div class="teams-rail-icon active" title="Teams">
+      <svg viewBox="0 0 24 24"><path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.51 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58C.48 14.9 0 15.62 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85-.85-.37-1.79-.58-2.78-.58-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/></svg>
+    </div>
+    <div class="teams-rail-icon" title="Calendar">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+    </div>
+    <div class="teams-rail-icon" title="Apps">
+      <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+    </div>
+    <div class="teams-rail-spacer"></div>
+    <div class="teams-avatar-small" title="Manoel Benício">MB</div>
+  </nav>
+
+  <!-- ===== TEAMS CHANNEL SIDEBAR ===== -->
+  <aside class="teams-sidebar">
+    <div class="teams-sidebar-header">
+      <h2>Teams</h2>
+    </div>
+    <div class="teams-sidebar-search">
+      <span>🔍</span> Filter
+    </div>
+    <div class="teams-channel-list">
+      <div class="teams-team-header">
+        <span class="team-avatar">GF</span>
+        <span class="team-name">Gestão Férias</span>
+      </div>
+      <div class="teams-channel active">
+        <span class="teams-channel-icon">📋</span> General
+      </div>
+      <div class="teams-channel">
+        <span class="teams-channel-icon">📢</span> Anúncios
+      </div>
+      <div class="teams-channel">
+        <span class="teams-channel-icon">💬</span> Suporte
+      </div>
+
+      <div class="teams-team-header" style="margin-top: 16px;">
+        <span class="team-avatar" style="background: linear-gradient(135deg, #f5576c, #ff6b8a);">AS</span>
+        <span class="team-name">Arq. Soluções</span>
+      </div>
+      <div class="teams-channel">
+        <span class="teams-channel-icon">📋</span> General
+      </div>
+      <div class="teams-channel">
+        <span class="teams-channel-icon">🔧</span> Deploy
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== TEAMS MAIN CONTENT ===== -->
+  <div class="teams-main">
+    <!-- Teams Tab Bar -->
+    <div class="teams-tabs">
+      <div class="teams-tab">Posts</div>
+      <div class="teams-tab">Files</div>
+      <div class="teams-tab active">⚡ Gestão Férias</div>
+      <div class="teams-tab">📊 Power BI</div>
+      <div class="teams-tab">Wiki</div>
+      <div class="teams-tab-spacer"></div>
+      <div class="teams-tab-action" title="Add tab">＋</div>
+    </div>
+
+    <!-- Power App Container -->
+    <div class="powerapp-container">
+      <div class="pa-canvas">
+
+        <!-- PA Header -->
+        <div class="pa-header">
+          <div class="pa-header-logo">🏖️</div>
+          <div class="pa-header-title">Gestão Férias</div>
+          <div class="pa-header-subtitle">Minsait / Indra</div>
+          <div class="pa-header-spacer"></div>
+          <div class="pa-header-user">
+            <span class="pa-header-user-name">Manoel Benício</span>
+            <div class="pa-header-user-avatar">MB</div>
+          </div>
+        </div>
+
+        <!-- PA Navigation (Fluent 2 Pivot) -->
+        <nav class="pa-nav">
+          <div class="pa-nav-item active" data-view="home">📊 Dashboard</div>
+          <div class="pa-nav-item" data-view="request">➕ Nova Solicitação</div>
+          <div class="pa-nav-item" data-view="myrequests">📋 Minhas Férias</div>
+          <div class="pa-nav-item" data-view="approvals">✅ Aprovações <span class="pa-nav-badge">6</span></div>
+          <div class="pa-nav-item" data-view="calendar">📅 Calendário</div>
+        </nav>
+
+        <!-- ============================================ -->
+        <!-- VIEW 1: HOME / DASHBOARD (Manager) -->
+        <!-- ============================================ -->
+        <div class="pa-view active" id="view-home">
+          <div class="pa-content">
+            <!-- KPI Row -->
+            <div class="pa-kpi-row">
+              <div class="pa-kpi-card blue">
+                <div class="pa-kpi-label">Colaboradores Ativos</div>
+                <div class="pa-kpi-value">16</div>
+                <div class="pa-kpi-detail">3 departamentos</div>
+                <div class="pa-kpi-icon">👥</div>
+              </div>
+              <div class="pa-kpi-card orange">
+                <div class="pa-kpi-label">Pendentes</div>
+                <div class="pa-kpi-value">6</div>
+                <div class="pa-kpi-detail">Aguardando aprovação</div>
+                <div class="pa-kpi-icon">⏳</div>
+              </div>
+              <div class="pa-kpi-card green">
+                <div class="pa-kpi-label">Aprovadas</div>
+                <div class="pa-kpi-value">6</div>
+                <div class="pa-kpi-detail">66 dias alocados</div>
+                <div class="pa-kpi-icon">✅</div>
+              </div>
+              <div class="pa-kpi-card red">
+                <div class="pa-kpi-label">Com Conflito</div>
+                <div class="pa-kpi-value">3</div>
+                <div class="pa-kpi-detail">Sobreposição</div>
+                <div class="pa-kpi-icon">⚠️</div>
+              </div>
+              <div class="pa-kpi-card purple">
+                <div class="pa-kpi-label">Saldo Médio</div>
+                <div class="pa-kpi-value">22d</div>
+                <div class="pa-kpi-detail">Por colaborador</div>
+                <div class="pa-kpi-icon">📊</div>
+              </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="pa-charts-row">
+              <!-- Donut Chart -->
+              <div class="pa-chart-card">
+                <div class="pa-chart-title">Solicitações por Status</div>
+                <div class="pa-donut-container">
+                  <svg class="pa-donut-svg" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="20"/>
+                    <!-- Approved: 6/14 = 43% → 154° -->
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#38ef7d" stroke-width="20"
+                      stroke-dasharray="161.4 215.2" stroke-dashoffset="0"
+                      transform="rotate(-90 80 80)" stroke-linecap="round"/>
+                    <!-- Pending: 6/14 = 43% → 154° -->
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#ffd200" stroke-width="20"
+                      stroke-dasharray="161.4 215.2" stroke-dashoffset="-161.4"
+                      transform="rotate(-90 80 80)" stroke-linecap="round"/>
+                    <!-- Rejected: 1/14 = 7% → 26° -->
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#ff6b8a" stroke-width="20"
+                      stroke-dasharray="26.9 349.7" stroke-dashoffset="-322.8"
+                      transform="rotate(-90 80 80)" stroke-linecap="round"/>
+                    <!-- Cancelled: 1/14 = 7% -->
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#666b7a" stroke-width="20"
+                      stroke-dasharray="26.9 349.7" stroke-dashoffset="-349.7"
+                      transform="rotate(-90 80 80)" stroke-linecap="round"/>
+                    <text x="80" y="76" text-anchor="middle" fill="#fff" font-size="28" font-weight="700">14</text>
+                    <text x="80" y="94" text-anchor="middle" fill="#8b8fa3" font-size="11">total</text>
+                  </svg>
+                  <div class="pa-donut-legend">
+                    <div class="pa-donut-legend-item"><div class="pa-donut-legend-dot" style="background:#38ef7d"></div> Aprovadas (6)</div>
+                    <div class="pa-donut-legend-item"><div class="pa-donut-legend-dot" style="background:#ffd200"></div> Pendentes (6)</div>
+                    <div class="pa-donut-legend-item"><div class="pa-donut-legend-dot" style="background:#ff6b8a"></div> Rejeitadas (1)</div>
+                    <div class="pa-donut-legend-item"><div class="pa-donut-legend-dot" style="background:#666b7a"></div> Canceladas (1)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bar Chart -->
+              <div class="pa-chart-card">
+                <div class="pa-chart-title">Colaboradores por Departamento</div>
+                <div class="pa-bar-chart">
+                  <div class="pa-bar-item">
+                    <div class="pa-bar-label">Engenharia</div>
+                    <div class="pa-bar-track"><div class="pa-bar-fill" style="width:100%; background: linear-gradient(90deg, #667eea, #764ba2);"></div></div>
+                    <div class="pa-bar-value">6</div>
+                  </div>
+                  <div class="pa-bar-item">
+                    <div class="pa-bar-label">Produto</div>
+                    <div class="pa-bar-track"><div class="pa-bar-fill" style="width:83%; background: linear-gradient(90deg, #11998e, #38ef7d);"></div></div>
+                    <div class="pa-bar-value">5</div>
+                  </div>
+                  <div class="pa-bar-item">
+                    <div class="pa-bar-label">Dados</div>
+                    <div class="pa-bar-track"><div class="pa-bar-fill" style="width:83%; background: linear-gradient(90deg, #667eea, #38bdf8);"></div></div>
+                    <div class="pa-bar-value">5</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Requests Table -->
+            <div class="pa-section">
+              <div class="pa-section-header">
+                <div class="pa-section-title">Solicitações Recentes</div>
+                <a class="pa-section-link" onclick="switchView('myrequests')">Ver todas →</a>
+              </div>
+              <div class="pa-table-wrap">
+                <table class="pa-table">
+                  <thead>
+                    <tr><th>Colaborador</th><th>Início</th><th>Fim</th><th>Dias</th><th>Status</th><th>Conflito</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Ana Silva</strong></td><td>01/12/2026</td><td>10/12/2026</td><td>8</td>
+                      <td><span class="pa-badge pending">Pendente</span></td><td>—</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Natália Gomes</strong></td><td>10/08/2026</td><td>22/08/2026</td><td>9</td>
+                      <td><span class="pa-badge pending">Pendente</span></td><td>⚠️ Sim</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Gabriela Dias</strong></td><td>05/10/2026</td><td>18/10/2026</td><td>10</td>
+                      <td><span class="pa-badge approved">Aprovado</span></td><td>—</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Fábio Santos</strong></td><td>20/06/2026</td><td>05/07/2026</td><td>12</td>
+                      <td><span class="pa-badge rejected">Rejeitado</span></td><td>—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VIEW 2: NOVA SOLICITAÇÃO -->
+        <!-- ============================================ -->
+        <div class="pa-view" id="view-request">
+          <div class="pa-content">
+            <div class="pa-balance-card">
+              <div class="pa-balance-big">22</div>
+              <div class="pa-balance-label">dias disponíveis</div>
+              <div class="pa-balance-sub">Período aquisitivo: 15/03/2025 – 14/03/2026 · Vence em 14/03/2027</div>
+            </div>
+
+            <div class="pa-section">
+              <div class="pa-section-title" style="margin-bottom: 16px;">Nova Solicitação de Férias</div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 600px;">
+                <div>
+                  <label style="font-size: 12px; color: #8b8fa3; display: block; margin-bottom: 6px;">Data Início</label>
+                  <input type="date" value="2026-08-03" style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e2e8; font-size: 14px;">
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: #8b8fa3; display: block; margin-bottom: 6px;">Data Fim</label>
+                  <input type="date" value="2026-08-14" style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e2e8; font-size: 14px;">
+                </div>
+              </div>
+
+              <div style="margin-top: 12px; padding: 12px 16px; background: rgba(56,239,125,0.08); border: 1px solid rgba(56,239,125,0.2); border-radius: 8px; max-width: 600px;">
+                <div style="font-size: 13px; color: #38ef7d;">✅ 10 dias úteis · Antecedência de 106 dias · Saldo suficiente</div>
+              </div>
+
+              <div class="pa-conflict-alert" style="max-width: 600px; margin-top: 12px;">
+                ⚠️ Bruno Costa (Engenharia) está de férias de 10/07 a 25/07 — período se sobrepõe parcialmente.
+              </div>
+
+              <div style="margin-top: 12px; max-width: 600px;">
+                <label style="font-size: 12px; color: #8b8fa3; display: block; margin-bottom: 6px;">Observações (opcional)</label>
+                <textarea style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e2e8; font-size: 13px; height: 70px; resize: none;" placeholder="Ex: Viagem familiar..."></textarea>
+              </div>
+
+              <div style="margin-top: 20px; display: flex; gap: 12px;">
+                <button class="pa-btn pa-btn-primary">📨 Enviar Solicitação</button>
+                <button class="pa-btn pa-btn-secondary">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VIEW 3: MINHAS FÉRIAS (Employee) -->
+        <!-- ============================================ -->
+        <div class="pa-view" id="view-myrequests">
+          <div class="pa-content">
+            <div class="pa-section">
+              <div class="pa-section-header">
+                <div class="pa-section-title">Minhas Solicitações</div>
+                <button class="pa-btn pa-btn-primary" onclick="switchView('request')">➕ Nova Solicitação</button>
+              </div>
+              <div class="pa-table-wrap">
+                <table class="pa-table">
+                  <thead>
+                    <tr><th>#</th><th>Início</th><th>Fim</th><th>Dias</th><th>Status</th><th>Aprovador</th><th>Criado Em</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>#13</td><td>01/12/2026</td><td>10/12/2026</td><td>8</td>
+                      <td><span class="pa-badge pending">Pendente</span></td>
+                      <td>Carlos Souza</td><td>19/04/2026</td>
+                    </tr>
+                    <tr>
+                      <td>#1</td><td>01/06/2026</td><td>15/06/2026</td><td>11</td>
+                      <td><span class="pa-badge approved">Aprovado</span></td>
+                      <td>Carlos Souza</td><td>10/04/2026</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VIEW 4: APROVAÇÕES (Manager) -->
+        <!-- ============================================ -->
+        <div class="pa-view" id="view-approvals">
+          <div class="pa-content">
+            <div class="pa-section">
+              <div class="pa-section-title" style="margin-bottom: 16px;">Aprovações Pendentes</div>
+
+              <!-- Card 1 -->
+              <div class="pa-approval-card">
+                <div class="pa-approval-header">
+                  <div class="pa-approval-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">AS</div>
+                  <div class="pa-approval-info">
+                    <h4>Ana Silva</h4>
+                    <p>Engenharia · ana.silva@minsait.com</p>
+                  </div>
+                </div>
+                <div class="pa-approval-details">
+                  <div><div class="pa-approval-detail-label">Início</div><div class="pa-approval-detail-value">01/12/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Fim</div><div class="pa-approval-detail-value">10/12/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Dias</div><div class="pa-approval-detail-value">8 dias</div></div>
+                  <div><div class="pa-approval-detail-label">Conflito</div><div class="pa-approval-detail-value">Nenhum ✅</div></div>
+                </div>
+                <div class="pa-approval-actions">
+                  <button class="pa-btn-reject">✕ Rejeitar</button>
+                  <button class="pa-btn-approve">✓ Aprovar</button>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="pa-approval-card">
+                <div class="pa-approval-header">
+                  <div class="pa-approval-avatar" style="background: linear-gradient(135deg, #f5576c, #ff6b8a);">NG</div>
+                  <div class="pa-approval-info">
+                    <h4>Natália Gomes</h4>
+                    <p>Dados · natalia.gomes@minsait.com</p>
+                  </div>
+                </div>
+                <div class="pa-approval-details">
+                  <div><div class="pa-approval-detail-label">Início</div><div class="pa-approval-detail-value">10/08/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Fim</div><div class="pa-approval-detail-value">22/08/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Dias</div><div class="pa-approval-detail-value">9 dias</div></div>
+                  <div><div class="pa-approval-detail-label">Conflito</div><div class="pa-approval-detail-value">⚠️ Bruno Costa</div></div>
+                </div>
+                <div class="pa-conflict-alert" style="margin-bottom: 12px;">
+                  ⚠️ Bruno Costa (Engenharia) tem férias aprovadas de 10/07 a 25/07 — sobreposição parcial.
+                </div>
+                <div class="pa-approval-actions">
+                  <button class="pa-btn-reject">✕ Rejeitar</button>
+                  <button class="pa-btn-approve">✓ Aprovar</button>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div class="pa-approval-card">
+                <div class="pa-approval-header">
+                  <div class="pa-approval-avatar" style="background: linear-gradient(135deg, #38ef7d, #11998e);">DR</div>
+                  <div class="pa-approval-info">
+                    <h4>Daniel Rocha</h4>
+                    <p>Engenharia · daniel.rocha@minsait.com</p>
+                  </div>
+                </div>
+                <div class="pa-approval-details">
+                  <div><div class="pa-approval-detail-label">Início</div><div class="pa-approval-detail-value">15/07/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Fim</div><div class="pa-approval-detail-value">30/07/2026</div></div>
+                  <div><div class="pa-approval-detail-label">Dias</div><div class="pa-approval-detail-value">12 dias</div></div>
+                  <div><div class="pa-approval-detail-label">Conflito</div><div class="pa-approval-detail-value">⚠️ Bruno Costa</div></div>
+                </div>
+                <div class="pa-approval-actions">
+                  <button class="pa-btn-reject">✕ Rejeitar</button>
+                  <button class="pa-btn-approve">✓ Aprovar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- VIEW 5: CALENDÁRIO (Team Calendar) -->
+        <!-- ============================================ -->
+        <div class="pa-view" id="view-calendar">
+          <div class="pa-content">
+            <div class="pa-calendar-header">
+              <div class="pa-calendar-nav">◀</div>
+              <div class="pa-calendar-month">Junho 2026</div>
+              <div class="pa-calendar-nav">▶</div>
+              <button class="pa-btn pa-btn-secondary" style="padding: 6px 14px; font-size: 12px; margin-left: 12px;">Hoje</button>
+            </div>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px; font-size: 12px; color: #8b8fa3;">
+              <span>🟢 Aprovado</span>
+              <span>🟡 Pendente</span>
+              <span>🔴 Feriado</span>
+            </div>
+
+            <div class="pa-calendar-grid" id="calGrid">
+              <!-- Weekday headers -->
+              <div class="pa-cal-weekday">Dom</div>
+              <div class="pa-cal-weekday">Seg</div>
+              <div class="pa-cal-weekday">Ter</div>
+              <div class="pa-cal-weekday">Qua</div>
+              <div class="pa-cal-weekday">Qui</div>
+              <div class="pa-cal-weekday">Sex</div>
+              <div class="pa-cal-weekday">Sáb</div>
+              <!-- June 2026 starts on Monday (0 empty cells on Sunday start) -->
+              <!-- Row 1 -->
+              <div class="pa-cal-day empty"></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">1</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">2</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">3</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">4</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">5</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">6</div></div>
+              <!-- Row 2 -->
+              <div class="pa-cal-day"><div class="pa-cal-day-num">7</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">8</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">9</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">10</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">11</div><div class="pa-cal-event holiday">Corpus Christi</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">12</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">13</div></div>
+              <!-- Row 3 -->
+              <div class="pa-cal-day"><div class="pa-cal-day-num">14</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">15</div><div class="pa-cal-event approved">Ana Silva</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">16</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">17</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">18</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">19</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">20</div><div class="pa-cal-event pending">Fábio Santos</div></div>
+              <!-- Row 4 -->
+              <div class="pa-cal-day"><div class="pa-cal-day-num">21</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">22</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">23</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">24</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">25</div><div class="pa-cal-event approved">H. Nunes</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">26</div><div class="pa-cal-event approved">H. Nunes</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">27</div></div>
+              <!-- Row 5 -->
+              <div class="pa-cal-day"><div class="pa-cal-day-num">28</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">29</div></div>
+              <div class="pa-cal-day"><div class="pa-cal-day-num">30</div></div>
+              <div class="pa-cal-day empty"></div>
+              <div class="pa-cal-day empty"></div>
+              <div class="pa-cal-day empty"></div>
+              <div class="pa-cal-day empty"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Watermark -->
+        <div class="pa-watermark">
+          Power Apps Canvas App · Gestão Férias v1.0 · <a>Minsait/Indra</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Simple view switching
+  function switchView(viewId) {
+    document.querySelectorAll('.pa-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.pa-nav-item').forEach(n => n.classList.remove('active'));
+    const view = document.getElementById('view-' + viewId);
+    if (view) view.classList.add('active');
+    const nav = document.querySelector(`[data-view="${viewId}"]`);
+    if (nav) nav.classList.add('active');
+  }
+
+  document.querySelectorAll('.pa-nav-item').forEach(item => {
+    item.addEventListener('click', () => switchView(item.dataset.view));
+  });
+</script>
+
+</body>
+</html>

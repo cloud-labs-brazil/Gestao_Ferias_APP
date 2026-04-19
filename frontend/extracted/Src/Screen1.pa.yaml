@@ -1,0 +1,880 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen1:
+    Properties:
+      Fill: =RGBA(255, 255, 255, 1)
+      LoadingSpinnerColor: =RGBA(0, 120, 212, 1)
+    Children:
+      - ScreenContainer4:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(245, 245, 245, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =16
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Width: =Parent.Width
+          Children:
+            - HeaderContainer2:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(255, 255, 255, 1)
+                  FillPortions: =0
+                  Height: =75
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                Children:
+                  - Header2:
+                      Control: Header@0.0.44
+                      Properties:
+                        Title: ="Cabeçalho"
+            - MainContainer4:
+                Control: GroupContainer@1.5.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(245, 245, 245, 1)
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =16
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  LayoutWrap: =true
+                  PaddingBottom: =2
+                  PaddingLeft: =2
+                  PaddingRight: =2
+                  PaddingTop: =2
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - FormContainer1:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =7
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        PaddingBottom: =15
+                        PaddingLeft: =15
+                        PaddingRight: =15
+                        PaddingTop: =15
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                      Children:
+                        - FormTitleText1:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.End
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              Size: =20
+                              Text: ="Solicitar aprovação"
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =180
+                        - ApprovalForm1:
+                            Control: Form@2.4.4
+                            Layout: Vertical
+                            Properties:
+                              BorderColor: =RGBA(245, 245, 245, 1)
+                              DataSource: =SolicitaçãoDeFérias
+                              DefaultMode: =FormMode.New
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              NumberOfColumns: =1
+                            Children:
+                              - Data de Início_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: DateTimeEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_datadeinicio"
+                                    Default: =ThisItem.'Data de Início'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_datadeinicio)
+                                    Required: =false
+                                    Update: =If(Not IsBlank(DateValue5.SelectedDate), DateTime(Year(DateValue5.SelectedDate), Month(DateValue5.SelectedDate), Day(DateValue5.SelectedDate), Value(HourValue5.Selected.Value), Value(MinuteValue5.Selected.Value), Second(DateValue5.SelectedDate)))
+                                    Width: =992
+                                    X: =0
+                                    Y: =0
+                                  Children:
+                                    - DataCardKey15:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DateValue5:
+                                        Control: DatePicker@0.0.46
+                                        MetadataKey: DateFieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DisplayMode: =Parent.DisplayMode
+                                          SelectedDate: =Parent.Default
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =(Parent.Width - 48) / 2
+                                          X: =24
+                                          Y: =DataCardKey15.Y + DataCardKey15.Height + 4
+                                    - HourValue5:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: HourFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Hour(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"]
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =DateValue5.Width / 2 - 10
+                                          X: =DateValue5.X + DateValue5.Width + 10
+                                          Y: =DateValue5.Y + 1
+                                    - Separator8:
+                                        Control: Text@0.0.51
+                                        MetadataKey: HourMinuteSeparator
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =HourValue5.Height
+                                          Text: =":"
+                                          Width: =10
+                                          X: =HourValue5.X + HourValue5.Width
+                                          Y: =HourValue5.Y
+                                    - MinuteValue5:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: MinuteFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Minute(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"]
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =HourValue5.Width
+                                          X: =HourValue5.X + HourValue5.Width + Separator8.Width
+                                          Y: =HourValue5.Y + 1
+                                    - ErrorMessage15:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DateValue5.Y + DateValue5.Height
+                                    - StarVisible15:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey15.Y
+                              - Data de Fim_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: DateTimeEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_datadefim"
+                                    Default: =ThisItem.'Data de Fim'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_datadefim)
+                                    Required: =false
+                                    Update: =If(Not IsBlank(DateValue6.SelectedDate), DateTime(Year(DateValue6.SelectedDate), Month(DateValue6.SelectedDate), Day(DateValue6.SelectedDate), Value(HourValue6.Selected.Value), Value(MinuteValue6.Selected.Value), Second(DateValue6.SelectedDate)))
+                                    Width: =992
+                                    X: =0
+                                    Y: =1
+                                  Children:
+                                    - DataCardKey16:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DateValue6:
+                                        Control: DatePicker@0.0.46
+                                        MetadataKey: DateFieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DisplayMode: =Parent.DisplayMode
+                                          SelectedDate: =Parent.Default
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =(Parent.Width - 48) / 2
+                                          X: =24
+                                          Y: =DataCardKey16.Y + DataCardKey16.Height + 4
+                                    - HourValue6:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: HourFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Hour(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"]
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =DateValue6.Width / 2 - 10
+                                          X: =DateValue6.X + DateValue6.Width + 10
+                                          Y: =DateValue6.Y + 1
+                                    - Separator9:
+                                        Control: Text@0.0.51
+                                        MetadataKey: HourMinuteSeparator
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =HourValue6.Height
+                                          Text: =":"
+                                          Width: =10
+                                          X: =HourValue6.X + HourValue6.Width
+                                          Y: =HourValue6.Y
+                                    - MinuteValue6:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: MinuteFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Minute(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"]
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =HourValue6.Width
+                                          X: =HourValue6.X + HourValue6.Width + Separator9.Width
+                                          Y: =HourValue6.Y + 1
+                                    - ErrorMessage16:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DateValue6.Y + DateValue6.Height
+                                    - StarVisible16:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey16.Y
+                              - Justificativa_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: TextualEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_justificativa"
+                                    Default: =ThisItem.Justificativa
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_justificativa)
+                                    MaxLength: =DataSourceInfo([@SolicitaçãoDeFérias], DataSourceInfo.MaxLength, crbdf_justificativa)
+                                    Required: =false
+                                    Update: =DataCardValue11.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =2
+                                  Children:
+                                    - DataCardKey17:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue11:
+                                        Control: TextInput@0.0.54
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DisplayMode: =Parent.DisplayMode
+                                          Mode: ="'TextInputCanvas.Mode'.TextInputModeSingleLine"
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Value: =Parent.Default
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey17.Y + DataCardKey17.Height + 4
+                                    - ErrorMessage17:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue11.Y + DataCardValue11.Height
+                                    - StarVisible17:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =30
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey17.Y
+                              - Status da Aprovação_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: ComboBoxOptionSetSingleEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_statusdaaprovacao"
+                                    Default: =ThisItem.'Status da Aprovação'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_statusdaaprovacao)
+                                    Required: =false
+                                    Update: =DataCardValue12.Selected.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =3
+                                  Children:
+                                    - DataCardKey18:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue12:
+                                        Control: ComboBox@0.0.51
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DefaultSelectedItems: =[Parent.Default]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Items: =Choices('Status da Aprovação (SolicitaçãoDeFérias)')
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey18.Y + DataCardKey18.Height + 4
+                                    - ErrorMessage18:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue12.Y + DataCardValue12.Height
+                                    - StarVisible18:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey18.Y
+                              - Tipo de Ausência_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: ComboBoxOptionSetSingleEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_tipodeausencia"
+                                    Default: =ThisItem.'Tipo de Ausência'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_tipodeausencia)
+                                    Required: =false
+                                    Update: =DataCardValue13.Selected.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =4
+                                  Children:
+                                    - DataCardKey19:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue13:
+                                        Control: ComboBox@0.0.51
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DefaultSelectedItems: =[Parent.Default]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Items: =Choices('Tipo de Ausência (SolicitaçãoDeFérias)')
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey19.Y + DataCardKey19.Height + 4
+                                    - ErrorMessage19:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue13.Y + DataCardValue13.Height
+                                    - StarVisible19:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey19.Y
+                              - Nome do Funcionário_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: TextualEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_nomedofuncionario"
+                                    Default: =ThisItem.'Nome do Funcionário'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_nomedofuncionario)
+                                    MaxLength: =DataSourceInfo([@SolicitaçãoDeFérias], DataSourceInfo.MaxLength, crbdf_nomedofuncionario)
+                                    Required: =true
+                                    Update: =DataCardValue14.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =5
+                                  Children:
+                                    - DataCardKey20:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue14:
+                                        Control: TextInput@0.0.54
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DisplayMode: =Parent.DisplayMode
+                                          Mode: ="'TextInputCanvas.Mode'.TextInputModeSingleLine"
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Value: =Parent.Default
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey20.Y + DataCardKey20.Height + 4
+                                    - ErrorMessage20:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue14.Y + DataCardValue14.Height
+                                    - StarVisible20:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =30
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey20.Y
+                              - Estado_DataCard1:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: ComboBoxOptionSetSingleEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="statecode"
+                                    Default: =ThisItem.Estado
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,statecode)
+                                    Required: =false
+                                    Update: =DataCardValue15.Selected.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =6
+                                  Children:
+                                    - DataCardKey21:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue15:
+                                        Control: ComboBox@0.0.51
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DefaultSelectedItems: =[Parent.Default]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Items: =Choices('Estado (SolicitaçãoDeFérias)')
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey21.Y + DataCardKey21.Height + 4
+                                    - ErrorMessage21:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue15.Y + DataCardValue15.Height
+                                    - StarVisible21:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey21.Y
+                              - Razón para el estado_DataCard1:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: ComboBoxOptionSetSingleEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="statuscode"
+                                    Default: =ThisItem.'Razón para el estado'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,statuscode)
+                                    Required: =false
+                                    Update: =DataCardValue16.Selected.Value
+                                    Width: =992
+                                    X: =0
+                                    Y: =7
+                                  Children:
+                                    - DataCardKey22:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DataCardValue16:
+                                        Control: ComboBox@0.0.51
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DefaultSelectedItems: =[Parent.Default]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Items: =Choices('Razón para el estado (SolicitaçãoDeFérias)')
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardKey22.Y + DataCardKey22.Height + 4
+                                    - ErrorMessage22:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DataCardValue16.Y + DataCardValue16.Height
+                                    - StarVisible22:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey22.Y
+                              - Data de Término_DataCard2:
+                                  Control: TypedDataCard@1.0.7
+                                  Variant: DateTimeEdit
+                                  IsLocked: true
+                                  Properties:
+                                    BorderColor: =RGBA(245, 245, 245, 1)
+                                    DataField: ="crbdf_datadetermino"
+                                    Default: =ThisItem.'Data de Término'
+                                    DisplayName: =DataSourceInfo([@SolicitaçãoDeFérias],DataSourceInfo.DisplayName,crbdf_datadetermino)
+                                    Required: =false
+                                    Update: =If(Not IsBlank(DateValue7.SelectedDate), DateTime(Year(DateValue7.SelectedDate), Month(DateValue7.SelectedDate), Day(DateValue7.SelectedDate), Value(HourValue7.Selected.Value), Value(MinuteValue7.Selected.Value), Second(DateValue7.SelectedDate)))
+                                    Width: =992
+                                    X: =0
+                                    Y: =8
+                                  Children:
+                                    - DataCardKey23:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Height: =22
+                                          Text: =Parent.DisplayName
+                                          Weight: ='TextCanvas.Weight'.Semibold
+                                          Width: =Parent.Width - 48
+                                          Wrap: =false
+                                          X: =24
+                                          Y: =10
+                                    - DateValue7:
+                                        Control: DatePicker@0.0.46
+                                        MetadataKey: DateFieldValue
+                                        Properties:
+                                          AccessibleLabel: =Parent.DisplayName
+                                          DisplayMode: =Parent.DisplayMode
+                                          SelectedDate: =Parent.Default
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =(Parent.Width - 48) / 2
+                                          X: =24
+                                          Y: =DataCardKey23.Y + DataCardKey23.Height + 4
+                                    - HourValue7:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: HourFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Hour(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"]
+                                          Required: =Parent.Required
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =DateValue7.Width / 2 - 10
+                                          X: =DateValue7.X + DateValue7.Width + 10
+                                          Y: =DateValue7.Y + 1
+                                    - Separator10:
+                                        Control: Text@0.0.51
+                                        MetadataKey: HourMinuteSeparator
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =HourValue7.Height
+                                          Text: =":"
+                                          Width: =10
+                                          X: =HourValue7.X + HourValue7.Width
+                                          Y: =HourValue7.Y
+                                    - MinuteValue7:
+                                        Control: DropDown@0.0.45
+                                        MetadataKey: MinuteFieldValue
+                                        Properties:
+                                          AccessibleLabel: =If(Parent.Required, Substitute("{0}. Obrigatório.", "{0}", Parent.DisplayName), Parent.DisplayName)
+                                          DefaultSelectedItems: =[Text(Minute(Parent.Default),"00")]
+                                          DisplayMode: =Parent.DisplayMode
+                                          Height: =28
+                                          Items: =["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"]
+                                          ValidationState: =If(IsBlank(Parent.Error), "None", "Error")
+                                          Width: =HourValue7.Width
+                                          X: =HourValue7.X + HourValue7.Width + Separator10.Width
+                                          Y: =HourValue7.Y + 1
+                                    - ErrorMessage23:
+                                        Control: Text@0.0.51
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Height: =30
+                                          Text: =Parent.Error
+                                          Visible: =And(!IsBlank(Parent.Error), Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =Parent.Width - 48
+                                          X: =24
+                                          Y: =DateValue7.Y + DateValue7.Height
+                                    - StarVisible23:
+                                        Control: Text@0.0.51
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Align: ='TextCanvas.Align'.Center
+                                          Height: =20
+                                          Text: ="*"
+                                          Visible: =And(Parent.Required, Parent.DisplayMode=DisplayMode.Edit)
+                                          Width: =30
+                                          Y: =DataCardKey23.Y
+                        - SubmitButton1:
+                            Control: Button@0.0.45
+                            Properties:
+                              AccessibleLabel: ="Botão Enviar solicitação de aprovação"
+                              AlignInContainer: =AlignInContainer.End
+                              OnSelect: |+
+                                =SubmitForm(ApprovalForm1);
+                                ResetForm(ApprovalForm1);
+                              Text: ="Enviar solicitação"
+                              Width: =140
+                  - SidebarContainer3:
+                      Control: GroupContainer@1.5.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =2
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =15
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Visible: =If(Screen1.Size = ScreenSize.Small, false, true)
+                      Children:
+                        - ReviewersText1:
+                            Control: Text@0.0.51
+                            Properties:
+                              Align: ='TextCanvas.Align'.End
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              Size: =20
+                              Text: ="Revisores"
+                              Weight: ='TextCanvas.Weight'.Semibold
+                              Width: =115
+                        - ReviewersGallery1:
+                            Control: Gallery@2.15.0
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Galeria de revisores"
+                              BorderColor: =RGBA(245, 245, 245, 1)
+                              Items: |-
+                                =[
+                                    {
+                                        Step: 1,
+                                        Name: "Name",
+                                        Title: "Title",
+                                        Status: "Approved",
+                                        Current: true
+                                    },
+                                    {
+                                        Step: 2,
+                                        Name: "Name",
+                                        Title: "Title",
+                                        Status: "Pending"
+                                    },
+                                    {
+                                        Step: 3,
+                                        Name: "Name",
+                                        Title: "Title",
+                                        Status: "Not Started"
+                                    },
+                                    {
+                                        Step: 4,
+                                        Name: "Name",
+                                        Title: "Title",
+                                        Status: "Not Started"
+                                    }
+                                ]
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =Parent.Width
+                              TabIndex: =0
+                              TemplatePadding: =0
+                              TemplateSize: =If(Screen1.Size = ScreenSize.Small, 80, 140)
+                            Children:
+                              - RectangleShape1:
+                                  Control: Rectangle@2.3.0
+                                  Properties:
+                                    BorderColor: =RGBA(0, 0, 0, 0)
+                                    BorderStyle: =BorderStyle.None
+                                    BorderThickness: =2
+                                    DisabledFill: =RGBA(161, 159, 157, 1)
+                                    DisplayMode: =DisplayMode.Disabled
+                                    Fill: =RGBA(214, 221, 224, 1)
+                                    FocusedBorderThickness: =4
+                                    Height: =If(ThisItem.Step = 1, Parent.TemplateHeight - BadgeStatus1.Height - BadgeStatus1.Y, ThisItem.Step <> Parent.AllItemsCount, Parent.TemplateHeight, BadgeStatus1.Y)
+                                    HoverFill: =RGBA(0, 120, 212, 1)
+                                    OnSelect: =Select(Parent)
+                                    PressedFill: =RGBA(0, 120, 212, 1)
+                                    Width: =2
+                                    X: =BadgeStatus1.X + (BadgeStatus1.Width / 2)
+                                    Y: =If(ThisItem.Step = 1, BadgeStatus1.Height + BadgeStatus1.Y, 0)
+                              - BadgeStatus1:
+                                  Control: Badge@0.0.24
+                                  Properties:
+                                    AccessibleLabel: ="Notificação de status da revisão"
+                                    BasePaletteColor: =Switch(ThisItem.Status, "Pending", Color.DarkGoldenRod, "Approved", Color.DarkGreen, "Rejected", Color.Red)
+                                    Content: =Left(ThisItem.Status, 1)
+                                    Height: =47
+                                    Width: =49
+                                    X: =30
+                                    Y: =((Parent.TemplateHeight - Self.Height) / 2) - 32
+                              - ReviewerNameText1:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =26
+                                    Text: =ThisItem.Name
+                                    Weight: =If(ThisItem.Current, "Bold", "Regular")
+                                    Width: =Parent.TemplateWidth-Self.X
+                                    X: =BadgeStatus1.X + BadgeStatus1.Width + 10
+                                    Y: =BadgeStatus1.Y
+                              - ReviewTypeText1:
+                                  Control: Text@0.0.51
+                                  Properties:
+                                    Height: =Parent.TemplateHeight / 2 - 5
+                                    Text: =ThisItem.Title
+                                    VerticalAlign: =VerticalAlign.Top
+                                    Weight: =If(ThisItem.Current, "Bold", "Regular")
+                                    Width: =ReviewerNameText1.Width
+                                    X: =ReviewerNameText1.X
+                                    Y: =ReviewerNameText1.Y + ReviewerNameText1.Height
